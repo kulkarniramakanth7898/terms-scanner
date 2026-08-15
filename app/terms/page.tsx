@@ -67,8 +67,8 @@ export default function TermsOfServicePage() {
               <h2 className="text-lg font-bold text-white">1. Acceptance of Terms</h2>
               <p>
                 By accessing or using TermsScanner (accessible via{' '}
-                <a href="https://termsscanner.ai" className="text-blue-400 hover:underline">
-                  https://termsscanner.ai
+                <a href="https://termsscanner.in" className="text-blue-400 hover:underline">
+                  https://termsscanner.in
                 </a>
                 ), you agree to be bound by these Terms of Service. If you do not agree to all terms, you must immediately discontinue use of the platform.
               </p>

@@ -65,10 +65,10 @@ export default function ContactPage() {
                 </div>
                 <p className="text-xs text-slate-400">Our support team responds within 24 hours.</p>
                 <a
-                  href="mailto:support@termsscanner.ai"
+                  href="mailto:support@termsscanner.in"
                   className="block text-sm font-semibold text-white hover:text-blue-400 transition-colors font-mono"
                 >
-                  support@termsscanner.ai
+                  support@termsscanner.in
                 </a>
               </div>
 
@@ -79,10 +79,10 @@ export default function ContactPage() {
                 </div>
                 <p className="text-xs text-slate-400">For press inquiries and commercial API integration.</p>
                 <a
-                  href="mailto:partners@termsscanner.ai"
+                  href="mailto:partners@termsscanner.in"
                   className="block text-sm font-semibold text-white hover:text-purple-400 transition-colors font-mono"
                 >
-                  partners@termsscanner.ai
+                  partners@termsscanner.in
                 </a>
               </div>
 
@@ -92,7 +92,7 @@ export default function ContactPage() {
                   <span>Location</span>
                 </div>
                 <p className="text-xs text-slate-300">TermsScanner AI Labs</p>
-                <p className="text-xs text-slate-400">San Francisco, CA, USA</p>
+                <p className="text-xs text-slate-400">Bengaluru, Karnataka, India</p>
               </div>
             </div>
 

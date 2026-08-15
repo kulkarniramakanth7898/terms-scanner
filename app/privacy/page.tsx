@@ -54,8 +54,8 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-lg font-bold text-white">1. Introduction</h2>
               <p>
                 Welcome to <strong>TermsScanner</strong> (accessible via{' '}
-                <a href="https://termsscanner.ai" className="text-blue-400 hover:underline">
-                  https://termsscanner.ai
+                <a href="https://termsscanner.in" className="text-blue-400 hover:underline">
+                  https://termsscanner.in
                 </a>
                 ). Your privacy and document confidentiality are our highest priorities. This Privacy Policy outlines how we collect, use, and safeguard information when you use our AI-powered legal audit services.
               </p>
@@ -116,8 +116,8 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-lg font-bold text-white">6. Contact Information</h2>
               <p>
                 If you have any questions or concerns regarding this Privacy Policy, please contact our privacy compliance team at{' '}
-                <a href="mailto:support@termsscanner.ai" className="text-blue-400 hover:underline">
-                  support@termsscanner.ai
+                <a href="mailto:support@termsscanner.in" className="text-blue-400 hover:underline">
+                  support@termsscanner.in
                 </a>
                 {' '}or via our{' '}
                 <Link href="/contact" className="text-blue-400 hover:underline">

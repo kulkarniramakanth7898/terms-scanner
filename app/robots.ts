@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: '/api/',
     },
-    sitemap: 'https://termsscanner.ai/sitemap.xml',
+    sitemap: 'https://termsscanner.in/sitemap.xml',
   };
 }

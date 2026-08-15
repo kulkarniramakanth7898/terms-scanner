@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://termsscanner.ai"),
+  metadataBase: new URL("https://termsscanner.in"),
   title: {
     default: "TermsScanner: Legal & Privacy Auditor | AI Contract & Policy Scanner",
     template: "%s | TermsScanner",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://termsscanner.ai",
+    url: "https://termsscanner.in",
     siteName: "TermsScanner",
     title: "TermsScanner: Legal & Privacy Auditor | AI Contract & Policy Scanner",
     description: "Instantly detect hidden risks in contracts, NDAs, and privacy policies using AI. Get plain-English explanations, counter-proposals, and Wayback time-travel diffs.",
