@@ -1,136 +1,117 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, ShieldCheck, Scale, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, FileText, AlertTriangle } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | TermsScanner',
-  description: 'Terms of Service, limitation of liability, and legal disclaimer for TermsScanner AI Auditor.',
+  title: 'Terms of Service & Limitation of Liability | TermsScanner',
+  description: 'Terms of Service detailing user agreement, "As-Is" warranty disclaimer, limitation of liability, and legal non-advice disclosures.',
 };
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       
       {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center space-x-2 text-sm font-semibold text-slate-300 hover:text-white transition-colors"
+            className="inline-flex items-center space-x-2 text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4 text-blue-400" />
+            <ArrowLeft className="w-4 h-4 text-blue-600" />
             <span>Back to TermsScanner</span>
           </Link>
           <div className="flex items-center space-x-2">
-            <ShieldCheck className="w-5 h-5 text-blue-400" />
-            <span className="font-bold text-white tracking-tight">TermsScanner</span>
+            <ShieldCheck className="w-5 h-5 text-blue-600" />
+            <span className="font-extrabold text-slate-900 tracking-tight">TermsScanner</span>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-12">
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-12 shadow-2xl space-y-8">
+        <div className="bg-white border border-slate-200 rounded-3xl p-8 sm:p-12 shadow-xl space-y-8">
           
           <div>
-            <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-blue-950/80 border border-blue-800/60 rounded-full text-xs font-semibold text-blue-300 mb-4">
-              <Scale className="w-3.5 h-3.5" />
-              <span>Legal Terms & User Agreement</span>
+            <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-xs font-bold text-amber-800 mb-4 shadow-sm">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+              <span>Legal Disclaimers & User Agreement</span>
             </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
               Terms of Service
             </h1>
-            <p className="text-xs text-slate-400 mt-2 font-mono">
+            <p className="text-xs text-slate-500 mt-2 font-mono">
               Last Updated: August 15, 2026
             </p>
           </div>
 
-          <hr className="border-slate-800" />
+          <hr className="border-slate-200" />
 
-          {/* Prominent Mandatory Disclaimer Banner */}
-          <div className="p-5 bg-amber-950/40 border border-amber-800/80 rounded-2xl flex items-start space-x-3 text-xs text-amber-200">
-            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          {/* Legal Non-Advice Banner */}
+          <div className="p-5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start space-x-3 text-xs text-amber-900">
+            <FileText className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <strong className="block text-amber-300 font-bold uppercase tracking-wider mb-1">
-                Mandatory Legal Disclaimer & Attorney-Client Notice
+              <strong className="block text-amber-950 font-black uppercase tracking-wider mb-1">
+                Notice: Informational Automated Heuristic Screening Only
               </strong>
               <span>
-                TermsScanner provides preliminary, automated compliance analysis for informational purposes only. It does not constitute legal advice and does not create an attorney-client relationship. We assume no responsibility or liability for inaccuracies, omissions, or legal damages arising from the use of this tool. Always consult a certified attorney for official compliance verification.
+                TermsScanner outputs automated heuristic recommendations for general informational purposes only. <strong>Our analysis does not constitute legal advice, formal auditing certification, or an attorney-client relationship.</strong> Always consult a licensed attorney for official legal counsel.
               </span>
             </div>
           </div>
 
-          {/* Detailed Clauses */}
-          <div className="space-y-6 text-sm text-slate-300 leading-relaxed">
+          <div className="space-y-6 text-sm text-slate-700 leading-relaxed">
             
             <section className="space-y-2">
-              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <span>1. Acceptance of Terms</span>
-              </h2>
+              <h2 className="text-lg font-extrabold text-slate-900">1. Acceptance of Terms</h2>
               <p>
-                By accessing or using TermsScanner (accessible via{' '}
-                <a href="https://termsscanner.in" className="text-blue-400 hover:underline">
-                  https://termsscanner.in
-                </a>
-                ), you agree to be bound by these Terms of Service. If you do not agree to all terms outlined herein, you must immediately cease using the platform.
+                By accessing or using <strong>TermsScanner</strong> (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree, you must cease using the Service immediately.
               </p>
             </section>
 
             <section className="space-y-2">
-              <h2 className="text-lg font-bold text-white">2. Scope of Service & Automated Rule Engine</h2>
+              <h2 className="text-lg font-extrabold text-slate-900">2. No Legal Advice Disclaimer</h2>
               <p>
-                TermsScanner provides automated document scanning, regex-based compliance checks (GDPR, HIPAA, CCPA, SOC 2, PCI-DSS), and AI-driven semantic clause risk detection. The user acknowledges that automated tools may produce false positives or false negatives, and agrees that all reports are purely informational.
+                The outputs, scores, and counter-proposals generated by TermsScanner are created by automated algorithms and artificial intelligence. They do not constitute formal legal opinions or attorney advice. You assume full responsibility for any actions taken based on these outputs.
               </p>
             </section>
 
             <section className="space-y-2">
-              <h2 className="text-lg font-bold text-white">3. User Responsibility & Risk Assumption</h2>
+              <h2 className="text-lg font-extrabold text-slate-900">3. &quot;As-Is&quot; & &quot;As-Available&quot; Warranty Disclaimer</h2>
               <p>
-                The user assumes <strong>100% of all risks</strong> associated with using, interpreting, or relying upon generated audit reports, risk scores, or counter-proposal suggestions. You remain solely responsible for validating contract terms with qualified legal counsel prior to executing any binding agreement.
+                THE SERVICE IS PROVIDED STRICTLY &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
               </p>
             </section>
 
             <section className="space-y-2">
-              <h2 className="text-lg font-bold text-white">4. Absolute Limitation of Liability</h2>
+              <h2 className="text-lg font-extrabold text-slate-900">4. Limitation of Liability</h2>
               <p>
-                To the maximum extent permitted by applicable law, TermsScanner, its operators, employees, and affiliates shall not be liable for any direct, indirect, incidental, punitive, special, or consequential damages, financial losses, regulatory fines, or legal disputes arising from or connected to your reliance on this service.
+                TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL TERMSSCANNER, ITS OPERATORS, AFFILIATES, OR SUPPLIERS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUE ARISING OUT OF YOUR USE OF THE SERVICE.
               </p>
             </section>
 
             <section className="space-y-2">
-              <h2 className="text-lg font-bold text-white">5. No Warranty ("As-Is" Basis)</h2>
+              <h2 className="text-lg font-extrabold text-slate-900">5. Contact Information</h2>
               <p>
-                TermsScanner is provided on an <strong>"AS IS" and "AS AVAILABLE" basis</strong> without warranties of any kind, whether express, implied, or statutory, including warranties of merchantability, fitness for a particular purpose, or non-infringement.
-              </p>
-            </section>
-
-            <section className="space-y-2">
-              <h2 className="text-lg font-bold text-white">6. Intellectual Property & Acceptable Use</h2>
-              <p>
-                All brand assets, custom rule dictionaries, UI designs, and software code are the intellectual property of TermsScanner. Users agree not to attempt denial-of-service attacks, reverse-engineer proprietary algorithms, or misrepresent automated AI output as certified legal opinion.
-              </p>
-            </section>
-
-            <section className="space-y-2">
-              <h2 className="text-lg font-bold text-white">7. Governing Law</h2>
-              <p>
-                These Terms shall be governed and construed in accordance with the laws of India, without regard to its conflict of law principles. Any legal proceedings shall be subject to the exclusive jurisdiction of courts in Bengaluru, Karnataka, India.
+                Questions regarding these Terms of Service may be addressed to{' '}
+                <a href="mailto:support@termsscanner.in" className="text-blue-600 hover:underline font-mono font-bold">
+                  support@termsscanner.in
+                </a>.
               </p>
             </section>
 
           </div>
 
-          {/* Footer Links */}
-          <div className="pt-6 border-t border-slate-800 flex justify-between items-center text-xs text-slate-500">
+          <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-3">
             <p>© {new Date().getFullYear()} TermsScanner. All rights reserved.</p>
-            <div className="flex space-x-4">
-              <Link href="/privacy-policy" className="hover:text-slate-300">
+            <div className="flex space-x-4 font-bold">
+              <Link href="/privacy-policy" className="hover:text-blue-600">
                 Privacy Policy
               </Link>
-              <Link href="/about" className="hover:text-slate-300">
+              <Link href="/about" className="hover:text-blue-600">
                 About Us
               </Link>
-              <Link href="/contact" className="hover:text-slate-300">
+              <Link href="/contact" className="hover:text-blue-600">
                 Contact Us
               </Link>
             </div>

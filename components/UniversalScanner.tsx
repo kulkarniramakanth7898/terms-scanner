@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Globe, Upload, FileText, Sparkles, AlertCircle, FileCode, Clock, ArrowRight, Check, Lock, ShieldCheck, ShieldAlert, Zap, Brain, XCircle, CheckCircle2 } from 'lucide-react';
+import { Globe, Upload, FileText, Sparkles, AlertCircle, Lock, ShieldCheck, ShieldAlert, Zap, Brain, XCircle, CheckCircle2, SlidersHorizontal, Check } from 'lucide-react';
 import { extractTextFromPDF } from '@/lib/pdf-parser';
 import { SAMPLE_DOCUMENTS } from '@/lib/sample-docs';
-import { SampleDoc, ScanMode, AnalyzeResponsePayload } from '@/lib/types';
+import { AnalyzeResponsePayload } from '@/lib/types';
 import { scanDocument, UnifiedScanSummary, FrameworkResult } from '@/lib/scanner';
 import { RiskDashboard } from './RiskDashboard';
 
 export interface UniversalScannerProps {
   defaultEngine?: 'instant' | 'ai';
-  defaultMode?: 'general' | 'regulatory';
+  defaultScanType?: 'general' | 'regulatory';
   defaultFrameworks?: string[];
   heroTitle?: string;
   heroSubtitle?: string;
@@ -28,17 +28,22 @@ export const FRAMEWORK_CHIPS = [
 
 export const UniversalScanner: React.FC<UniversalScannerProps> = ({
   defaultEngine = 'instant',
-  defaultMode = 'general',
+  defaultScanType = 'general',
   defaultFrameworks = ['All'],
   heroTitle,
   heroSubtitle
 }) => {
+  // LEVEL 1: Processing Engine (First Choice)
   const [engine, setEngine] = useState<'instant' | 'ai'>(defaultEngine);
-  const [scannerMode, setScannerMode] = useState<'general' | 'regulatory'>(defaultMode);
-  const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>(defaultFrameworks);
-  const [activeTab, setActiveTab] = useState<'text' | 'pdf' | 'url' | 'samples'>('text');
 
-  // Form Inputs
+  // LEVEL 2: Scan Type (Second Choice)
+  const [scanType, setScanType] = useState<'general' | 'regulatory'>(defaultScanType);
+
+  // LEVEL 3: Framework Selection (Appears ONLY when scanType === 'regulatory')
+  const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>(defaultFrameworks);
+
+  // Input Tabs & Files
+  const [activeTab, setActiveTab] = useState<'text' | 'pdf' | 'url' | 'samples'>('text');
   const [rawText, setRawText] = useState('');
   const [url, setUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -46,7 +51,7 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Status & Results
+  // Execution States & Results
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [complianceSummary, setComplianceSummary] = useState<UnifiedScanSummary | null>(null);
@@ -72,21 +77,26 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
     }
   };
 
-  // Run Audit Logic according to selected Engine (Instant Offline vs Deep AI Gemini)
+  // Run Audit Logic based on Engine & Scan Type
   const executeScan = async (textToAudit: string) => {
     setIsLoading(true);
     setErrorMsg(null);
     setComplianceSummary(null);
     setRiskAnalysisPayload(null);
 
-    // ENGINE A: INSTANT OFFLINE SCAN (100% Browser Regex & Compliance Engine)
-    if (engine === 'instant') {
+    // If Regulatory Compliance Audit is selected, compute framework scores locally
+    if (scanType === 'regulatory' || engine === 'instant') {
       try {
         const localResults = scanDocument(textToAudit, selectedFrameworks);
         setComplianceSummary(localResults);
-        setViewTab('compliance');
+      } catch (err: any) {
+        console.warn('Compliance scan error:', err);
+      }
+    }
 
-        // Also generate instant risk findings locally via API instant mode
+    // Engine A: Instant Offline Scan
+    if (engine === 'instant') {
+      try {
         const res = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -96,13 +106,15 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
         if (data.success) {
           setRiskAnalysisPayload(data);
         }
+        if (scanType === 'regulatory') setViewTab('compliance');
+        else setViewTab('riskCards');
       } catch (err: any) {
-        console.warn('Local scan error:', err);
+        console.warn('Instant risk analysis error:', err);
       } finally {
         setIsLoading(false);
       }
-    } 
-    // ENGINE B: DEEP AI SCAN (Gemini API 2.5 Flash)
+    }
+    // Engine B: Deep AI Scan (Gemini)
     else {
       try {
         const res = await fetch('/api/analyze', {
@@ -118,11 +130,8 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
           throw new Error(data.error || 'Failed to complete Deep AI Gemini Audit.');
         }
         setRiskAnalysisPayload(data);
-        setViewTab('riskCards');
-
-        // Optional local compliance overview
-        const localResults = scanDocument(textToAudit, selectedFrameworks);
-        setComplianceSummary(localResults);
+        if (scanType === 'regulatory') setViewTab('compliance');
+        else setViewTab('riskCards');
       } catch (aiErr: any) {
         console.error('Deep AI scan error:', aiErr);
         setErrorMsg(aiErr.message || 'Gemini AI scan encountered an error.');
@@ -158,7 +167,7 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
       const localResults = scanDocument(extractedText, selectedFrameworks);
       setComplianceSummary(localResults);
 
-      if (engine === 'instant') setViewTab('compliance');
+      if (scanType === 'regulatory') setViewTab('compliance');
       else setViewTab('riskCards');
     } catch (err: any) {
       setErrorMsg(err.message || 'URL scraping failed. Please paste text directly.');
@@ -195,85 +204,103 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
   return (
     <div className="w-full max-w-4xl mx-auto my-6 px-4 space-y-6">
       
-      {/* Optional Hero Title / Header */}
+      {/* Optional Custom Hero Title */}
       {(heroTitle || heroSubtitle) && (
         <div className="text-center space-y-2 mb-4">
-          {heroTitle && <h2 className="text-2xl sm:text-3xl font-extrabold text-white">{heroTitle}</h2>}
-          {heroSubtitle && <p className="text-sm text-slate-400 max-w-2xl mx-auto">{heroSubtitle}</p>}
+          {heroTitle && <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{heroTitle}</h2>}
+          {heroSubtitle && <p className="text-sm text-slate-600 max-w-2xl mx-auto">{heroSubtitle}</p>}
         </div>
       )}
 
-      {/* Main Dual-Engine Scanner Container */}
+      {/* Main Dual-Engine Light Card Container */}
       {!complianceSummary && !riskAnalysisPayload && !isLoading && (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-xl transition-all">
+        <div className="bg-white border border-slate-200/90 rounded-3xl shadow-xl overflow-hidden transition-all">
           
-          {/* Dual Engine Switcher Bar */}
-          <div className="p-3.5 bg-slate-950 border-b border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-            
-            <div className="p-1 bg-slate-900 border border-slate-800 rounded-2xl inline-flex space-x-1 w-full sm:w-auto justify-center">
+          {/* LEVEL 1: Processing Engine (First Choice) */}
+          <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col items-center justify-center space-y-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Step 1: Choose Processing Engine
+            </span>
+            <div className="p-1 bg-white border border-slate-200 rounded-2xl inline-flex space-x-1 shadow-sm w-full sm:w-auto justify-center">
               
-              {/* Engine A: Instant Offline Scan */}
+              {/* Option A: Instant Offline Scan */}
               <button
                 type="button"
                 onClick={() => setEngine('instant')}
-                className={`flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all ${
+                className={`flex items-center justify-center space-x-2 py-2.5 px-5 rounded-xl text-xs font-extrabold transition-all ${
                   engine === 'instant'
-                    ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-slate-950 shadow-md scale-[1.02]'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm scale-[1.01]'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
-                <Zap className={`w-4 h-4 ${engine === 'instant' ? 'fill-slate-950 text-slate-950' : 'text-amber-400'}`} />
+                <Zap className={`w-4 h-4 ${engine === 'instant' ? 'fill-slate-950 text-slate-950' : 'text-amber-500'}`} />
                 <span>⚡ Instant Offline Scan</span>
               </button>
 
-              {/* Engine B: Deep AI Scan (Gemini) */}
+              {/* Option B: Deep AI Scan (Gemini) */}
               <button
                 type="button"
                 onClick={() => setEngine('ai')}
-                className={`flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all ${
+                className={`flex items-center justify-center space-x-2 py-2.5 px-5 rounded-xl text-xs font-extrabold transition-all ${
                   engine === 'ai'
-                    ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-md scale-[1.02]'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-blue-600 text-white shadow-sm scale-[1.01]'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
-                <Brain className={`w-4 h-4 ${engine === 'ai' ? 'text-blue-100' : 'text-blue-400'}`} />
+                <Brain className={`w-4 h-4 ${engine === 'ai' ? 'text-white' : 'text-blue-600'}`} />
                 <span>🧠 Deep AI Scan (Gemini)</span>
               </button>
 
             </div>
-
-            {/* Sub-Mode Selector Pills */}
-            <div className="flex items-center space-x-1.5 text-xs">
-              <button
-                type="button"
-                onClick={() => setScannerMode('general')}
-                className={`px-3 py-1 rounded-lg font-semibold transition-all ${
-                  scannerMode === 'general' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'
-                }`}
-              >
-                General Terms
-              </button>
-              <button
-                type="button"
-                onClick={() => setScannerMode('regulatory')}
-                className={`px-3 py-1 rounded-lg font-semibold transition-all ${
-                  scannerMode === 'regulatory' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'
-                }`}
-              >
-                Regulatory Audit
-              </button>
-            </div>
-
           </div>
 
-          {/* Mode 2: Framework Selectors (For Instant Scan or Regulatory Audit) */}
-          {(scannerMode === 'regulatory' || engine === 'instant') && (
-            <div className="p-4 bg-slate-950/60 border-b border-slate-800/80">
+          {/* LEVEL 2: Scan Type (Second Choice) */}
+          <div className="p-3.5 bg-slate-100/70 border-b border-slate-200 flex flex-col items-center justify-center space-y-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Step 2: Select Scan Objective
+            </span>
+            <div className="p-1 bg-white border border-slate-200/90 rounded-2xl inline-flex space-x-1 shadow-sm w-full sm:w-auto justify-center">
+              
+              {/* Option A: General Terms Scan */}
+              <button
+                type="button"
+                onClick={() => setScanType('general')}
+                className={`flex items-center justify-center space-x-2 py-2 px-4 rounded-xl text-xs font-extrabold transition-all ${
+                  scanType === 'general'
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>📋 General Terms Scan</span>
+              </button>
+
+              {/* Option B: Regulatory Compliance Audit */}
+              <button
+                type="button"
+                onClick={() => setScanType('regulatory')}
+                className={`flex items-center justify-center space-x-2 py-2 px-4 rounded-xl text-xs font-extrabold transition-all ${
+                  scanType === 'regulatory'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>⚖️ Regulatory Compliance Audit</span>
+              </button>
+
+            </div>
+          </div>
+
+          {/* LEVEL 3: Conditional Compliance Framework Chips (Appears ONLY when scanType === 'regulatory') */}
+          {scanType === 'regulatory' && (
+            <div className="p-4 bg-emerald-50/60 border-b border-emerald-100 animate-fadeIn">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Select Compliance Frameworks:
+                <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 flex items-center space-x-1.5">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Select Active Frameworks:</span>
                 </span>
-                <span className="text-[11px] font-mono text-amber-400">
+                <span className="text-[11px] font-bold text-emerald-700">
                   {selectedFrameworks.includes('All') ? 'All Frameworks Active' : `${selectedFrameworks.length} Selected`}
                 </span>
               </div>
@@ -287,8 +314,8 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
                       onClick={() => handleFrameworkToggle(chip.id)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
                         isSel
-                          ? 'bg-amber-950 text-amber-300 border-amber-600 shadow-sm'
-                          : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                          ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                       }`}
                     >
                       <span>{chip.label}</span>
@@ -300,14 +327,14 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
           )}
 
           {/* Input Channel Tabs */}
-          <div className="flex border-b border-slate-800 bg-slate-950/40 overflow-x-auto scrollbar-none">
+          <div className="flex border-b border-slate-200 bg-slate-50/60 overflow-x-auto scrollbar-none">
             <button
               type="button"
               onClick={() => { setActiveTab('text'); setErrorMsg(null); }}
               className={`flex items-center space-x-2 px-5 py-3.5 text-xs font-bold border-b-2 transition-all ${
                 activeTab === 'text'
-                  ? 'border-blue-500 text-blue-400 bg-slate-900/60'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-blue-600 text-blue-600 bg-white'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
               <FileText className="w-4 h-4" />
@@ -319,8 +346,8 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
               onClick={() => { setActiveTab('pdf'); setErrorMsg(null); }}
               className={`flex items-center space-x-2 px-5 py-3.5 text-xs font-bold border-b-2 transition-all ${
                 activeTab === 'pdf'
-                  ? 'border-blue-500 text-blue-400 bg-slate-900/60'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-blue-600 text-blue-600 bg-white'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
               <Upload className="w-4 h-4" />
@@ -332,8 +359,8 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
               onClick={() => { setActiveTab('url'); setErrorMsg(null); }}
               className={`flex items-center space-x-2 px-5 py-3.5 text-xs font-bold border-b-2 transition-all ${
                 activeTab === 'url'
-                  ? 'border-blue-500 text-blue-400 bg-slate-900/60'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-blue-600 text-blue-600 bg-white'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
               <Globe className="w-4 h-4" />
@@ -345,11 +372,11 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
               onClick={() => { setActiveTab('samples'); setErrorMsg(null); }}
               className={`flex items-center space-x-2 px-5 py-3.5 text-xs font-bold border-b-2 transition-all ${
                 activeTab === 'samples'
-                  ? 'border-blue-500 text-blue-400 bg-slate-900/60'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-blue-600 text-blue-600 bg-white'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Sparkles className="w-4 h-4 text-amber-400" />
+              <Sparkles className="w-4 h-4 text-amber-500" />
               <span>Sample Contracts</span>
             </button>
           </div>
@@ -365,20 +392,20 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
                   value={rawText}
                   onChange={(e) => setRawText(e.target.value)}
                   placeholder="Paste document terms, NDA, privacy policy, or vendor agreement text here..."
-                  className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:bg-white font-mono"
                 />
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <p className="text-xs text-slate-400 font-medium flex items-center space-x-1">
-                    <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span>{engine === 'instant' ? '🔒 100% Offline Local Scan — Zero data transmitted.' : '🧠 Powered by Gemini 2.5 Flash AI.'}</span>
+                  <p className="text-xs text-slate-600 font-semibold flex items-center space-x-1.5">
+                    <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>{engine === 'instant' ? '🔒 100% Offline Local Scan — Zero data transmitted' : '🧠 Powered by Gemini 2.5 Flash AI — Ephemeral context processing'}</span>
                   </p>
                   <button
                     type="submit"
                     disabled={rawText.trim().length < 20}
-                    className={`px-6 py-2.5 font-extrabold text-xs rounded-xl shadow-lg disabled:opacity-50 ${
+                    className={`px-6 py-2.5 font-extrabold text-xs rounded-xl shadow-md disabled:opacity-50 transition-all ${
                       engine === 'instant'
-                        ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950'
-                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
+                        ? 'bg-amber-500 hover:bg-amber-400 text-slate-950'
+                        : 'bg-blue-600 hover:bg-blue-500 text-white'
                     }`}
                   >
                     Run {engine === 'instant' ? '⚡ Instant Scan' : '🧠 Deep AI Audit'}
@@ -396,18 +423,18 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
                   onDrop={(e) => { e.preventDefault(); setIsDragOver(false); if (e.dataTransfer.files[0]) handleFileProcess(e.dataTransfer.files[0]); }}
                   onClick={() => fileInputRef.current?.click()}
                   className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
-                    isDragOver ? 'border-blue-500 bg-blue-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/40'
+                    isDragOver ? 'border-blue-500 bg-blue-50/50' : 'border-slate-300 hover:border-slate-400 bg-slate-50/40'
                   }`}
                 >
                   <input type="file" ref={fileInputRef} onChange={(e) => e.target.files?.[0] && handleFileProcess(e.target.files[0])} accept=".pdf" className="hidden" />
-                  <Upload className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-                  <h3 className="text-sm font-bold text-white">Drop PDF file here or click to browse</h3>
-                  <p className="text-xs text-slate-400 mt-1">Natively extracted 100% locally in browser memory using pdfjs-dist.</p>
-                  {pdfProgress && <p className="text-xs font-semibold text-emerald-400 mt-2">{pdfProgress}</p>}
+                  <Upload className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                  <h3 className="text-sm font-bold text-slate-900">Drop PDF file here or click to browse</h3>
+                  <p className="text-xs text-slate-500 mt-1">Natively extracted 100% locally in browser memory using pdfjs-dist.</p>
+                  {pdfProgress && <p className="text-xs font-semibold text-emerald-600 mt-2">{pdfProgress}</p>}
                 </div>
-                <p className="text-center text-xs text-slate-400 font-medium flex items-center justify-center space-x-1">
-                  <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>🔒 100% Client-Side PDF Parsing — No document data leaves your device.</span>
+                <p className="text-center text-xs text-slate-600 font-semibold flex items-center justify-center space-x-1.5">
+                  <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>🔒 100% Client-Side PDF Parsing — Zero document data leaves your device.</span>
                 </p>
               </div>
             )}
@@ -416,13 +443,13 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
             {activeTab === 'url' && (
               <form onSubmit={handleUrlSubmit} className="space-y-4">
                 <div className="relative flex items-center">
-                  <Globe className="absolute left-4 w-4 h-4 text-slate-500" />
+                  <Globe className="absolute left-4 w-4 h-4 text-slate-400" />
                   <input
                     type="url"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://example.com/privacy-policy"
-                    className="w-full pl-10 pr-32 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    className="w-full pl-10 pr-32 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:bg-white"
                   />
                   <button
                     type="submit"
@@ -432,8 +459,8 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
                     Fetch & Scan
                   </button>
                 </div>
-                <p className="text-center text-xs text-slate-400 font-medium flex items-center justify-center space-x-1">
-                  <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <p className="text-center text-xs text-slate-600 font-semibold flex items-center justify-center space-x-1.5">
+                  <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <span>🔒 URL text is scraped ephemerally for instant or Gemini AI audit.</span>
                 </p>
               </form>
@@ -442,16 +469,16 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
             {/* TAB 4: SAMPLES */}
             {activeTab === 'samples' && (
               <div className="space-y-3">
-                <p className="text-xs text-slate-400">Click a sample agreement to test immediately:</p>
+                <p className="text-xs text-slate-600 font-medium">Click a sample agreement to test immediately:</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {SAMPLE_DOCUMENTS.map((s) => (
                     <div
                       key={s.id}
                       onClick={() => executeScan(s.text)}
-                      className="p-3.5 bg-slate-950 border border-slate-800 hover:border-blue-500/60 rounded-xl cursor-pointer transition-all"
+                      className="p-3.5 bg-slate-50 border border-slate-200 hover:border-blue-500/80 hover:bg-white rounded-xl cursor-pointer transition-all shadow-sm"
                     >
-                      <h4 className="text-xs font-bold text-white">{s.title}</h4>
-                      <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">{s.description}</p>
+                      <h4 className="text-xs font-bold text-slate-900">{s.title}</h4>
+                      <p className="text-[11px] text-slate-600 mt-1 line-clamp-2">{s.description}</p>
                     </div>
                   ))}
                 </div>
@@ -460,8 +487,8 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
 
             {/* Error Display */}
             {errorMsg && (
-              <div className="mt-4 p-3 bg-rose-950/80 border border-rose-800 rounded-xl text-rose-200 text-xs flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <div className="mt-4 p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
@@ -472,9 +499,9 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
 
       {/* Loading Spinner */}
       {isLoading && (
-        <div className="p-12 text-center bg-slate-900/90 border border-slate-800 rounded-3xl shadow-xl space-y-3">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm font-bold text-white">
+        <div className="p-12 text-center bg-white border border-slate-200/90 rounded-3xl shadow-lg space-y-3">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm font-bold text-slate-900">
             {engine === 'instant' ? 'Running 100% Offline Local Audit...' : 'Executing Gemini 2.5 Flash Deep AI Scan...'}
           </p>
         </div>
@@ -489,28 +516,30 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
             <button
               type="button"
               onClick={handleReset}
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-blue-400 rounded-xl text-xs font-bold flex items-center space-x-1.5"
+              className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-blue-600 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-sm"
             >
               <span>← Back to Scanner</span>
             </button>
 
-            {/* Tab switcher between Compliance Grid & Risk Clause Cards */}
-            <div className="p-1 bg-slate-900 border border-slate-800 rounded-xl flex space-x-1">
-              <button
-                type="button"
-                onClick={() => setViewTab('compliance')}
-                className={`px-4 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
-                  viewTab === 'compliance' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Framework Compliance Grid
-              </button>
+            {/* View Tab Switcher */}
+            <div className="p-1 bg-white border border-slate-200 rounded-xl flex space-x-1 shadow-sm">
+              {complianceSummary && (
+                <button
+                  type="button"
+                  onClick={() => setViewTab('compliance')}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
+                    viewTab === 'compliance' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Regulatory Compliance Grid
+                </button>
+              )}
               {riskAnalysisPayload && (
                 <button
                   type="button"
                   onClick={() => setViewTab('riskCards')}
                   className={`px-4 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
-                    viewTab === 'riskCards' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                    viewTab === 'riskCards' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Clause Risk Audit ({riskAnalysisPayload.findings.length})
@@ -528,69 +557,69 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
                 const isYellow = score >= 70 && score < 90;
 
                 const scoreBg = isGreen
-                  ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                   : isYellow
-                  ? 'bg-amber-950 text-amber-300 border-amber-800'
-                  : 'bg-rose-950 text-rose-300 border-rose-800';
+                  ? 'bg-amber-50 text-amber-800 border-amber-200'
+                  : 'bg-rose-50 text-rose-800 border-rose-200';
 
                 const barColor = isGreen ? 'bg-emerald-500' : isYellow ? 'bg-amber-500' : 'bg-rose-500';
 
                 return (
                   <div
                     key={result.frameworkId}
-                    className="p-6 bg-slate-900/90 border border-slate-800 rounded-3xl shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-5"
+                    className="p-6 bg-white border border-slate-200 rounded-3xl shadow-lg flex flex-col justify-between space-y-5"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3 mb-2">
-                        <h3 className="text-base font-extrabold text-white tracking-tight">
+                        <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
                           {result.frameworkName}
                         </h3>
                         <span className={`px-3 py-1 rounded-full text-xs font-black border shrink-0 ${scoreBg}`}>
                           {score}% Score
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 leading-relaxed mb-4">{result.description}</p>
+                      <p className="text-xs text-slate-600 leading-relaxed mb-4">{result.description}</p>
                       
-                      <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
                         <div className={`h-full transition-all duration-500 ${barColor}`} style={{ width: `${score}%` }} />
                       </div>
                     </div>
 
-                    <div className="space-y-4 pt-4 border-t border-slate-800">
+                    <div className="space-y-4 pt-4 border-t border-slate-100">
                       <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2 flex items-center space-x-1.5">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-2 flex items-center space-x-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                           <span>Satisfied Mandatory Clauses ({result.passedCount}):</span>
                         </h4>
                         {result.detectedClauses.length > 0 ? (
                           <ul className="space-y-1.5">
                             {result.detectedClauses.map((c) => (
-                              <li key={c.id} className="p-2.5 bg-emerald-950/30 border border-emerald-900/50 rounded-xl text-xs">
-                                <span className="font-bold text-emerald-200">✓ {c.clauseName}</span>
+                              <li key={c.id} className="p-2.5 bg-emerald-50/60 border border-emerald-200/70 rounded-xl text-xs">
+                                <span className="font-bold text-emerald-900">✓ {c.clauseName}</span>
                               </li>
                             ))}
                           </ul>
                         ) : (
-                          <p className="text-xs text-slate-500 italic p-2 bg-slate-950 rounded-xl">None detected.</p>
+                          <p className="text-xs text-slate-500 italic p-2 bg-slate-50 rounded-xl">None detected.</p>
                         )}
                       </div>
 
                       <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-rose-400 mb-2 flex items-center space-x-1.5">
-                          <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-rose-700 mb-2 flex items-center space-x-1.5">
+                          <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
                           <span>Missing Critical Clauses ({result.failedCount}):</span>
                         </h4>
                         {result.missingClauses.length > 0 ? (
                           <ul className="space-y-1.5">
                             {result.missingClauses.map((c) => (
-                              <li key={c.id} className="p-2.5 bg-rose-950/30 border border-rose-900/50 rounded-xl text-xs space-y-0.5">
-                                <span className="font-bold text-rose-200">✗ {c.clauseName}</span>
-                                <p className="text-[11px] text-rose-300/90">{c.missingMessage}</p>
+                              <li key={c.id} className="p-2.5 bg-rose-50/60 border border-rose-200/70 rounded-xl text-xs space-y-0.5">
+                                <span className="font-bold text-rose-900">✗ {c.clauseName}</span>
+                                <p className="text-[11px] text-rose-800">{c.missingMessage}</p>
                               </li>
                             ))}
                           </ul>
                         ) : (
-                          <p className="text-xs text-emerald-400 font-semibold p-2 bg-emerald-950/40 border border-emerald-900/60 rounded-xl">
+                          <p className="text-xs text-emerald-700 font-bold p-2 bg-emerald-50 border border-emerald-200 rounded-xl">
                             ✓ 100% Fully Compliant for this framework!
                           </p>
                         )}

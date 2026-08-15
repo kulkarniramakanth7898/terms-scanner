@@ -77,7 +77,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} dark antialiased`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <head>
         {/* Google AdSense Meta Verification */}
         <meta name="google-adsense-account" content="ca-pub-5058901049330069" />
@@ -89,57 +89,57 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between">
+      <body className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between">
         <div className="flex-1">
           {children}
         </div>
 
-        {/* Global Task 4 Footer */}
-        <footer className="border-t border-slate-900 bg-slate-950 py-10 text-center text-xs text-slate-500 mt-12">
+        {/* Global Footer */}
+        <footer className="border-t border-slate-200 bg-white py-10 text-center text-xs text-slate-500 mt-12 shadow-inner">
           <div className="max-w-5xl mx-auto px-4 space-y-6">
             
             {/* Specialized Auditor Links */}
-            <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-slate-400 pb-3 border-b border-slate-900">
-              <span className="text-slate-500 uppercase tracking-wider text-[10px] block w-full sm:w-auto">Compliance Auditors:</span>
-              <Link href="/gdpr-checker" className="hover:text-emerald-400 transition-colors">
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-slate-600 pb-3 border-b border-slate-100">
+              <span className="text-slate-400 uppercase tracking-wider text-[10px] block w-full sm:w-auto">Compliance Auditors:</span>
+              <Link href="/gdpr-checker" className="hover:text-emerald-600 transition-colors">
                 GDPR Checker
               </Link>
               <span>•</span>
-              <Link href="/hipaa-audit" className="hover:text-blue-400 transition-colors">
+              <Link href="/hipaa-audit" className="hover:text-blue-600 transition-colors">
                 HIPAA BAA Audit
               </Link>
               <span>•</span>
-              <Link href="/ccpa-compliance" className="hover:text-amber-400 transition-colors">
+              <Link href="/ccpa-compliance" className="hover:text-amber-600 transition-colors">
                 CCPA / CPRA Auditor
               </Link>
               <span>•</span>
-              <Link href="/soc2-evaluator" className="hover:text-purple-400 transition-colors">
+              <Link href="/soc2-evaluator" className="hover:text-purple-600 transition-colors">
                 SOC 2 Evaluator
               </Link>
             </div>
 
             {/* Standard Legal Links */}
-            <div className="flex flex-wrap items-center justify-center gap-6 font-semibold text-slate-400">
-              <Link href="/privacy-policy" className="hover:text-blue-400 transition-colors">
+            <div className="flex flex-wrap items-center justify-center gap-6 font-bold text-slate-600">
+              <Link href="/privacy-policy" className="hover:text-blue-600 transition-colors">
                 Privacy Policy
               </Link>
               <span>•</span>
-              <Link href="/terms-of-service" className="hover:text-blue-400 transition-colors">
+              <Link href="/terms-of-service" className="hover:text-blue-600 transition-colors">
                 Terms of Service
               </Link>
               <span>•</span>
-              <Link href="/about" className="hover:text-blue-400 transition-colors">
+              <Link href="/about" className="hover:text-blue-600 transition-colors">
                 About Us
               </Link>
               <span>•</span>
-              <Link href="/contact" className="hover:text-blue-400 transition-colors">
+              <Link href="/contact" className="hover:text-blue-600 transition-colors">
                 Contact
               </Link>
             </div>
 
             {/* Prominent Mandatory Legal Disclaimer */}
-            <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-2xl max-w-4xl mx-auto text-left text-[11px] text-slate-400 leading-relaxed space-y-1">
-              <p className="font-semibold text-slate-300">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl max-w-4xl mx-auto text-left text-[11px] text-slate-600 leading-relaxed space-y-1">
+              <p className="font-semibold text-slate-700">
                 Disclaimer: TermsScanner provides automated heuristic and rule-based compliance analysis for informational purposes only. It does not constitute formal legal advice, auditing certification, or an attorney-client relationship. We accept no liability for regulatory penalties or omissions. Consult a qualified attorney for legal compliance.
               </p>
             </div>

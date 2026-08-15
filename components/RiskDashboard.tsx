@@ -50,10 +50,10 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
   const isModerateScore = score >= 30 && score < 60;
 
   const scoreColor = isCriticalScore
-    ? 'text-rose-400 border-rose-800/80 bg-rose-950/60'
+    ? 'text-rose-700 border-rose-200 bg-rose-50'
     : isModerateScore
-    ? 'text-amber-400 border-amber-800/80 bg-amber-950/60'
-    : 'text-emerald-400 border-emerald-800/80 bg-emerald-950/60';
+    ? 'text-amber-700 border-amber-200 bg-amber-50'
+    : 'text-emerald-700 border-emerald-200 bg-emerald-50';
 
   // Export as Markdown File
   const exportMarkdown = () => {
@@ -105,49 +105,49 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
         <button
           type="button"
           onClick={onReset}
-          className="inline-flex items-center space-x-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-blue-400 hover:text-blue-300 border border-slate-800 hover:border-blue-500/60 rounded-xl text-xs font-extrabold transition-all shadow-md group"
+          className="inline-flex items-center space-x-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-blue-600 border border-slate-200 rounded-xl text-xs font-extrabold transition-all shadow-sm group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Back to Scanner</span>
         </button>
 
-        <div className="flex items-center space-x-2 text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1.5 border border-slate-800 rounded-xl">
+        <div className="flex items-center space-x-2 text-xs text-slate-600 font-mono bg-white px-3 py-1.5 border border-slate-200 rounded-xl shadow-sm">
           <span>Engine:</span>
-          <strong className="text-white">
-            {data.mode === 'instant' ? '⚡ Instant Regex' : '🧠 Gemini 2.5 Flash'}
+          <strong className="text-slate-900">
+            {data.mode === 'instant' ? '⚡ Instant Offline' : '🧠 Gemini 2.5 AI'}
           </strong>
         </div>
       </div>
 
       {/* Overview Stats Dashboard Header */}
-      <div className="p-6 sm:p-8 bg-slate-900/90 border border-slate-800 rounded-3xl shadow-2xl backdrop-blur-xl">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-800">
+      <div className="p-6 sm:p-8 bg-white border border-slate-200/90 rounded-3xl shadow-xl">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-200">
           
           {/* Document Title & Type */}
           <div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-blue-950/80 border border-blue-800/60 rounded-full text-xs font-semibold text-blue-300 mb-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs font-bold text-blue-800 mb-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
               <span>Audit Complete • Source: {data.sourceType.toUpperCase()}</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               {data.extractedTitle || 'Legal Risk Findings'}
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1 font-medium">
               Scanned {data.rawTextLength.toLocaleString()} characters of agreement text
             </p>
           </div>
 
           {/* Overall Risk Score Meter */}
           <div className="flex items-center space-x-4">
-            <div className={`p-4 rounded-2xl border ${scoreColor} text-center min-w-[140px] shadow-lg`}>
+            <div className={`p-4 rounded-2xl border ${scoreColor} text-center min-w-[140px] shadow-sm`}>
               <span className="block text-[10px] font-bold uppercase tracking-wider opacity-80">
                 Overall Risk Index
               </span>
-              <span className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+              <span className="text-3xl sm:text-4xl font-black tracking-tight">
                 {summary.overallRiskScore}
-                <span className="text-sm font-normal text-slate-400">/100</span>
+                <span className="text-sm font-normal text-slate-500">/100</span>
               </span>
-              <span className="block text-[11px] font-bold mt-0.5">
+              <span className="block text-[11px] font-extrabold mt-0.5">
                 {isCriticalScore ? 'CRITICAL RISK' : isModerateScore ? 'MODERATE RISK' : 'LOW RISK'}
               </span>
             </div>
@@ -157,7 +157,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
               <button
                 type="button"
                 onClick={onReset}
-                className="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all shadow-sm"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>New Audit</span>
@@ -167,7 +167,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
                 <button
                   type="button"
                   onClick={exportMarkdown}
-                  className="px-3 py-1.5 bg-blue-900/40 hover:bg-blue-900/80 text-blue-200 border border-blue-700/60 rounded-lg text-xs font-medium transition-all flex items-center space-x-1"
+                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold transition-all flex items-center space-x-1"
                   title="Export Markdown Report"
                 >
                   <FileText className="w-3.5 h-3.5" />
@@ -176,7 +176,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
                 <button
                   type="button"
                   onClick={exportJSON}
-                  className="px-3 py-1.5 bg-indigo-900/40 hover:bg-indigo-900/80 text-indigo-200 border border-indigo-700/60 rounded-lg text-xs font-medium transition-all flex items-center space-x-1"
+                  className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition-all flex items-center space-x-1"
                   title="Export Raw JSON"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -185,7 +185,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
                 <button
                   type="button"
                   onClick={handlePrintPDF}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-medium transition-all flex items-center space-x-1"
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition-all flex items-center space-x-1"
                   title="Print / Save PDF"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -199,39 +199,39 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
 
         {/* Stats Grid Bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl">
-            <span className="text-xs text-slate-400 font-medium">Total Clauses Scanned</span>
-            <span className="block text-2xl font-bold text-white mt-1">
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+            <span className="text-xs text-slate-500 font-semibold">Total Clauses Scanned</span>
+            <span className="block text-2xl font-bold text-slate-900 mt-1">
               {summary.totalClauses}
             </span>
           </div>
 
-          <div className="p-4 bg-rose-950/40 border border-rose-900/60 rounded-2xl">
+          <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-rose-300 font-semibold">High / Critical Risk</span>
-              <AlertOctagon className="w-4 h-4 text-rose-400" />
+              <span className="text-xs text-rose-700 font-bold">High / Critical Risk</span>
+              <AlertOctagon className="w-4 h-4 text-rose-600" />
             </div>
-            <span className="block text-2xl font-bold text-rose-200 mt-1">
+            <span className="block text-2xl font-bold text-rose-900 mt-1">
               {summary.highRiskCount}
             </span>
           </div>
 
-          <div className="p-4 bg-amber-950/40 border border-amber-900/60 rounded-2xl">
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-amber-300 font-semibold">Medium Risk</span>
-              <ShieldAlert className="w-4 h-4 text-amber-400" />
+              <span className="text-xs text-amber-700 font-bold">Medium Risk</span>
+              <ShieldAlert className="w-4 h-4 text-amber-600" />
             </div>
-            <span className="block text-2xl font-bold text-amber-200 mt-1">
+            <span className="block text-2xl font-bold text-amber-900 mt-1">
               {summary.mediumRiskCount}
             </span>
           </div>
 
-          <div className="p-4 bg-emerald-950/40 border border-emerald-900/60 rounded-2xl">
+          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-emerald-300 font-semibold">Safe / Low Risk</span>
-              <CheckCircle className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs text-emerald-700 font-bold">Safe / Low Risk</span>
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
             </div>
-            <span className="block text-2xl font-bold text-emerald-200 mt-1">
+            <span className="block text-2xl font-bold text-emerald-900 mt-1">
               {summary.lowRiskCount}
             </span>
           </div>
@@ -242,14 +242,14 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         
         {/* Filter Pills */}
-        <div className="flex items-center space-x-1.5 p-1.5 bg-slate-900 border border-slate-800 rounded-2xl w-full sm:w-auto">
+        <div className="flex items-center space-x-1.5 p-1.5 bg-white border border-slate-200 rounded-2xl w-full sm:w-auto shadow-sm">
           <button
             type="button"
             onClick={() => setFilterLevel('All')}
             className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
               filterLevel === 'All'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             All Findings ({findings.length})
@@ -259,8 +259,8 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
             onClick={() => setFilterLevel('High')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
               filterLevel === 'High'
-                ? 'bg-rose-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-rose-300'
+                ? 'bg-rose-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-rose-700'
             }`}
           >
             High/Critical ({summary.highRiskCount})
@@ -270,8 +270,8 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
             onClick={() => setFilterLevel('Medium')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
               filterLevel === 'Medium'
-                ? 'bg-amber-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-amber-300'
+                ? 'bg-amber-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-amber-700'
             }`}
           >
             Medium ({summary.mediumRiskCount})
@@ -281,8 +281,8 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
             onClick={() => setFilterLevel('Low')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
               filterLevel === 'Low'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-emerald-300'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-emerald-700'
             }`}
           >
             Safe/Low ({summary.lowRiskCount})
@@ -291,13 +291,13 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
 
         {/* Search input */}
         <div className="relative w-full sm:w-64">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search clause quotes..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-sm"
           />
         </div>
 
@@ -310,8 +310,8 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
             <RiskCard key={finding.id || idx} finding={finding} />
           ))
         ) : (
-          <div className="p-12 text-center bg-slate-900/60 border border-slate-800 rounded-2xl text-slate-400 text-sm">
-            <Filter className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+          <div className="p-12 text-center bg-white border border-slate-200 rounded-2xl text-slate-500 text-sm shadow-sm">
+            <Filter className="w-8 h-8 text-slate-400 mx-auto mb-2" />
             <p>No risk findings match your selected filter or search query.</p>
           </div>
         )}

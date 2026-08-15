@@ -25,52 +25,52 @@ export const RiskCard: React.FC<RiskCardProps> = ({ finding }) => {
   const isMedium = levelStr === 'MEDIUM';
   const isLow = levelStr === 'LOW';
 
-  // Styling based on risk level
+  // Light Theme styling based on risk level
   const cardBorder = isCritical
-    ? 'border-rose-600/80 shadow-rose-950/40 bg-slate-900/90'
+    ? 'border-rose-300 shadow-rose-100 bg-white'
     : isHigh
-    ? 'border-rose-900/60 shadow-rose-950/20 bg-slate-900/90'
+    ? 'border-rose-200 shadow-rose-50 bg-white'
     : isMedium
-    ? 'border-amber-900/60 shadow-amber-950/20 bg-slate-900/90'
-    : 'border-emerald-900/60 shadow-emerald-950/20 bg-slate-900/90';
+    ? 'border-amber-200 shadow-amber-50 bg-white'
+    : 'border-emerald-200 shadow-emerald-50 bg-white';
 
   const badgeBg = isCritical
-    ? 'bg-rose-900 text-white border-rose-500 shadow-sm animate-pulse'
+    ? 'bg-rose-600 text-white border-rose-700 shadow-sm animate-pulse'
     : isHigh
-    ? 'bg-rose-950 text-rose-300 border-rose-800/80'
+    ? 'bg-rose-100 text-rose-800 border-rose-300'
     : isMedium
-    ? 'bg-amber-950 text-amber-300 border-amber-800/80'
-    : 'bg-emerald-950 text-emerald-300 border-emerald-800/80';
+    ? 'bg-amber-100 text-amber-800 border-amber-300'
+    : 'bg-emerald-100 text-emerald-800 border-emerald-300';
 
   const quoteBorderColor = isCritical || isHigh
-    ? 'border-rose-500/80 bg-rose-950/20 text-rose-100'
+    ? 'border-rose-500 bg-rose-50/80 text-rose-950'
     : isMedium
-    ? 'border-amber-500/80 bg-amber-950/20 text-amber-100'
-    : 'border-emerald-500/80 bg-emerald-950/20 text-emerald-100';
+    ? 'border-amber-500 bg-amber-50/80 text-amber-950'
+    : 'border-emerald-500 bg-emerald-50/80 text-emerald-950';
 
   return (
-    <div className={`p-6 border rounded-2xl shadow-xl backdrop-blur-xl transition-all ${cardBorder} group`}>
+    <div className={`p-6 border rounded-2xl shadow-md transition-all ${cardBorder} group`}>
       
       {/* Header Bar: Status Icon & Risk Level & Category */}
       <div className="flex items-center justify-between gap-2 mb-4">
         <div className="flex items-center space-x-2.5">
           {isCritical && (
-            <div className="p-2 rounded-xl bg-rose-950/90 text-rose-400 border border-rose-600/80 shadow-md">
-              <Flame className="w-5 h-5 animate-bounce text-rose-500" />
+            <div className="p-2 rounded-xl bg-rose-100 text-rose-600 border border-rose-200 shadow-sm">
+              <Flame className="w-5 h-5 animate-bounce text-rose-600" />
             </div>
           )}
           {isHigh && !isCritical && (
-            <div className="p-2 rounded-xl bg-rose-950/90 text-rose-400 border border-rose-800/80 shadow-md">
+            <div className="p-2 rounded-xl bg-rose-100 text-rose-600 border border-rose-200 shadow-sm">
               <AlertOctagon className="w-5 h-5" />
             </div>
           )}
           {isMedium && (
-            <div className="p-2 rounded-xl bg-amber-950/90 text-amber-400 border border-amber-800/80 shadow-md">
+            <div className="p-2 rounded-xl bg-amber-100 text-amber-600 border border-amber-200 shadow-sm">
               <ShieldAlert className="w-5 h-5" />
             </div>
           )}
           {isLow && (
-            <div className="p-2 rounded-xl bg-emerald-950/90 text-emerald-400 border border-emerald-800/80 shadow-md">
+            <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600 border border-emerald-200 shadow-sm">
               <CheckCircle className="w-5 h-5" />
             </div>
           )}
@@ -82,7 +82,7 @@ export const RiskCard: React.FC<RiskCardProps> = ({ finding }) => {
         </div>
 
         {finding.category && (
-          <div className="flex items-center space-x-1 px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-lg text-xs font-medium text-slate-400">
+          <div className="flex items-center space-x-1 px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700">
             <Tag className="w-3 h-3 text-slate-500" />
             <span>{finding.category}</span>
           </div>
@@ -91,43 +91,43 @@ export const RiskCard: React.FC<RiskCardProps> = ({ finding }) => {
 
       {/* Clause Title if provided */}
       {finding.title && (
-        <h3 className="text-base font-bold text-white mb-2">
+        <h3 className="text-base font-extrabold text-slate-900 mb-2">
           {finding.title}
         </h3>
       )}
 
       {/* Exact Quote Block */}
       <div className="mb-4">
-        <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+        <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
           Matched Clause Quote:
         </span>
-        <blockquote className={`p-4 border-l-4 rounded-r-xl italic text-sm leading-relaxed font-serif ${quoteBorderColor}`}>
+        <blockquote className={`p-4 border-l-4 rounded-r-xl italic text-xs sm:text-sm leading-relaxed font-serif ${quoteBorderColor}`}>
           &ldquo;{finding.quote}&rdquo;
         </blockquote>
       </div>
 
       {/* Plain-English Explanation */}
       <div className="mb-5">
-        <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+        <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
           Why this clause is bad:
         </span>
-        <p className="text-sm text-slate-200 leading-relaxed font-normal bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
+        <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3.5 rounded-xl border border-slate-200">
           {finding.explanation}
         </p>
       </div>
 
       {/* 💡 How to Handle It Section */}
-      <div className="pt-4 border-t border-slate-800/80 bg-blue-950/20 -mx-6 -mb-6 p-6 rounded-b-2xl">
+      <div className="pt-4 border-t border-slate-200 bg-amber-50/50 -mx-6 -mb-6 p-6 rounded-b-2xl">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start space-x-2.5">
-            <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300 mt-0.5 shrink-0">
-              <Lightbulb className="w-4 h-4 fill-amber-400 text-amber-300" />
+            <div className="p-1.5 rounded-lg bg-amber-100 text-amber-700 mt-0.5 shrink-0 border border-amber-200">
+              <Lightbulb className="w-4 h-4 fill-amber-500 text-amber-600" />
             </div>
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-300">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-900">
                 💡 How to handle it / Negotiation Counter-Proposal
               </h4>
-              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-800 mt-1 leading-relaxed font-medium">
                 {finding.suggestion}
               </p>
             </div>
@@ -136,17 +136,17 @@ export const RiskCard: React.FC<RiskCardProps> = ({ finding }) => {
           <button
             type="button"
             onClick={handleCopySuggestion}
-            className="shrink-0 inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 rounded-lg text-xs font-medium transition-all"
+            className="shrink-0 inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 rounded-lg text-xs font-bold transition-all shadow-sm"
             title="Copy counter-clause text to clipboard"
           >
             {copied ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-300">Copied!</span>
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-emerald-700">Copied!</span>
               </>
             ) : (
               <>
-                <Copy className="w-3.5 h-3.5 text-slate-400" />
+                <Copy className="w-3.5 h-3.5 text-slate-500" />
                 <span>Copy</span>
               </>
             )}
