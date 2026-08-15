@@ -61,6 +61,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "",
+  },
   other: {
     "google-adsense-account": "ca-pub-5058901049330069"
   }
@@ -79,6 +82,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <head>
+        {/* Google Search Console Meta Verification Tag */}
+        {process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && (
+          <meta name="google-site-verification" content={process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION} />
+        )}
+
         {/* Google AdSense Meta Verification */}
         <meta name="google-adsense-account" content="ca-pub-5058901049330069" />
 
