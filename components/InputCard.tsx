@@ -1,20 +1,30 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Globe, Upload, FileText, Sparkles, AlertCircle, FileCode, Clock, ArrowRight, Check } from 'lucide-react';
+import { Globe, Upload, FileText, Sparkles, AlertCircle, FileCode, Clock, ArrowRight, Check, Lock } from 'lucide-react';
 import { extractTextFromPDF } from '@/lib/pdf-parser';
 import { SAMPLE_DOCUMENTS } from '@/lib/sample-docs';
 import { SampleDoc, ScanMode } from '@/lib/types';
 import { ModeToggle } from './ModeToggle';
+import { FrameworkSelector } from './FrameworkSelector';
 
 interface InputCardProps {
-  onAnalyze: (payload: { type: 'url' | 'text'; content: string; mode: ScanMode; compareWithHistory?: boolean }) => void;
+  onAnalyze: (payload: { type: 'url' | 'text'; content: string; mode: ScanMode; selectedFrameworks?: string[]; compareWithHistory?: boolean }) => void;
   isLoading: boolean;
   mode: ScanMode;
   setMode: (mode: ScanMode) => void;
+  selectedFrameworks: string[];
+  setSelectedFrameworks: (frameworks: string[]) => void;
 }
 
-export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode, setMode }) => {
+export const InputCard: React.FC<InputCardProps> = ({
+  onAnalyze,
+  isLoading,
+  mode,
+  setMode,
+  selectedFrameworks,
+  setSelectedFrameworks
+}) => {
   const [activeTab, setActiveTab] = useState<'url' | 'pdf' | 'text' | 'samples'>('url');
   
   // URL Tab State
@@ -48,6 +58,7 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode
       type: 'url',
       content: url.trim(),
       mode,
+      selectedFrameworks,
       compareWithHistory
     });
   };
@@ -71,7 +82,8 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode
       onAnalyze({
         type: 'text',
         content: extractedText,
-        mode
+        mode,
+        selectedFrameworks
       });
     } catch (err: any) {
       console.error(err);
@@ -107,7 +119,8 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode
     onAnalyze({
       type: 'text',
       content: rawText.trim(),
-      mode
+      mode,
+      selectedFrameworks
     });
   };
 
@@ -122,7 +135,8 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode
     onAnalyze({
       type: 'text',
       content: sample.text,
-      mode
+      mode,
+      selectedFrameworks
     });
   };
 
@@ -192,9 +206,15 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode
         {/* Tab Body */}
         <div className="p-6">
           
+          {/* Framework Multi-Select Selector */}
+          <FrameworkSelector
+            selectedFrameworks={selectedFrameworks}
+            onChange={setSelectedFrameworks}
+          />
+
           {/* TAB 1: PASTE WEBSITE URL */}
           {activeTab === 'url' && (
-            <form onSubmit={handleUrlSubmit} className="space-y-4">
+            <form onSubmit={handleUrlSubmit} className="space-y-4 mt-4">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
                   Enter Privacy Policy or Terms of Service URL
@@ -221,7 +241,7 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode
               </div>
 
               {/* Time-Travel Toggle */}
-              <div className="flex items-center space-x-2 pt-2 text-xs text-slate-300">
+              <div className="flex items-center space-x-2 pt-1 text-xs text-slate-300">
                 <input
                   type="checkbox"
                   id="timeTravelCheck"
@@ -236,12 +256,18 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode
                   </span>
                 </label>
               </div>
+
+              {/* Mandatory Task 3 UI Disclaimer */}
+              <p className="text-center text-[11px] text-slate-400 pt-2 font-medium flex items-center justify-center space-x-1">
+                <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Zero Data Leaves Your Device. Scanning is done 100% locally in your browser.</span>
+              </p>
             </form>
           )}
 
           {/* TAB 2: UPLOAD DOCUMENT (PDF) */}
           {activeTab === 'pdf' && (
-            <div className="space-y-4">
+            <div className="space-y-4 mt-4">
               <div
                 onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
                 onDragLeave={() => setIsDragOver(false)}
@@ -284,12 +310,18 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode
                   </p>
                 )}
               </div>
+
+              {/* Mandatory Task 3 UI Disclaimer */}
+              <p className="text-center text-[11px] text-slate-400 pt-1 font-medium flex items-center justify-center space-x-1">
+                <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Zero Data Leaves Your Device. Scanning is done 100% locally in your browser.</span>
+              </p>
             </div>
           )}
 
           {/* TAB 3: PASTE RAW TEXT */}
           {activeTab === 'text' && (
-            <form onSubmit={handleTextSubmit} className="space-y-4">
+            <form onSubmit={handleTextSubmit} className="space-y-4 mt-4">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
                   Paste Agreement Text
@@ -303,11 +335,17 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode
                   className="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono leading-relaxed"
                 />
               </div>
-              <div className="flex justify-end">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                {/* Mandatory Task 3 UI Disclaimer */}
+                <p className="text-[11px] text-slate-400 font-medium flex items-center space-x-1">
+                  <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Zero Data Leaves Your Device. Scanning is done 100% locally in your browser.</span>
+                </p>
+
                 <button
                   type="submit"
                   disabled={isLoading || rawText.trim().length < 20}
-                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all disabled:opacity-50 flex items-center space-x-2"
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all disabled:opacity-50 flex items-center space-x-2 shrink-0"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>{mode === 'instant' ? 'Instant Audit Text' : 'Deep AI Audit Text'}</span>
@@ -318,7 +356,7 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode
 
           {/* TAB 4: SAMPLE PRESETS */}
           {activeTab === 'samples' && (
-            <div className="space-y-3">
+            <div className="space-y-3 mt-4">
               <p className="text-xs text-slate-400 mb-3">
                 Click any sample contract below to test TermsScanner immediately with realistic predatory clauses:
               </p>
@@ -354,6 +392,12 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode
                   </div>
                 ))}
               </div>
+
+              {/* Mandatory Task 3 UI Disclaimer */}
+              <p className="text-center text-[11px] text-slate-400 pt-3 font-medium flex items-center justify-center space-x-1">
+                <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Zero Data Leaves Your Device. Scanning is done 100% locally in your browser.</span>
+              </p>
             </div>
           )}
 
