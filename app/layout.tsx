@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     default: "TermsScanner: Legal & Privacy Auditor | AI Contract & Policy Scanner",
     template: "%s | TermsScanner",
   },
-  description: "Instantly detect hidden risks in contracts, NDAs, and privacy policies using AI. Get plain-English explanations, counter-proposals, and Wayback time-travel diffs.",
+  description: "Instantly detect hidden risks in contracts, NDAs, and privacy policies using AI. 100% Client-Side GDPR, HIPAA, CCPA, SOC 2 & PCI-DSS compliance auditor.",
   keywords: [
     "TermsScanner",
     "privacy auditor",
@@ -29,10 +29,12 @@ export const metadata: Metadata = {
     "terms of service auditor",
     "PDF legal scanner",
     "privacy policy risk",
-    "policy erosion tracker",
-    "GDPR compliance scanner",
+    "GDPR compliance checker",
     "HIPAA compliance audit",
-    "CCPA compliance check"
+    "CCPA compliance check",
+    "SOC 2 evaluator",
+    "PCI-DSS security audit",
+    "DPDP Act India auditor"
   ],
   authors: [{ name: "TermsScanner AI" }],
   openGraph: {
@@ -41,7 +43,7 @@ export const metadata: Metadata = {
     url: "https://termsscanner.in",
     siteName: "TermsScanner",
     title: "TermsScanner: Legal & Privacy Auditor | AI Contract & Policy Scanner",
-    description: "Instantly detect hidden risks in contracts, NDAs, and privacy policies using AI. Get plain-English explanations, counter-proposals, and Wayback time-travel diffs.",
+    description: "Instantly detect hidden risks in contracts, NDAs, and privacy policies using AI. 100% Client-Side compliance auditing.",
   },
   twitter: {
     card: "summary_large_image",
@@ -96,7 +98,27 @@ export default function RootLayout({
         <footer className="border-t border-slate-900 bg-slate-950 py-10 text-center text-xs text-slate-500 mt-12">
           <div className="max-w-5xl mx-auto px-4 space-y-6">
             
-            {/* Nav Links */}
+            {/* Specialized Auditor Links */}
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-slate-400 pb-3 border-b border-slate-900">
+              <span className="text-slate-500 uppercase tracking-wider text-[10px] block w-full sm:w-auto">Compliance Auditors:</span>
+              <Link href="/gdpr-checker" className="hover:text-emerald-400 transition-colors">
+                GDPR Checker
+              </Link>
+              <span>•</span>
+              <Link href="/hipaa-audit" className="hover:text-blue-400 transition-colors">
+                HIPAA BAA Audit
+              </Link>
+              <span>•</span>
+              <Link href="/ccpa-compliance" className="hover:text-amber-400 transition-colors">
+                CCPA / CPRA Auditor
+              </Link>
+              <span>•</span>
+              <Link href="/soc2-evaluator" className="hover:text-purple-400 transition-colors">
+                SOC 2 Evaluator
+              </Link>
+            </div>
+
+            {/* Standard Legal Links */}
             <div className="flex flex-wrap items-center justify-center gap-6 font-semibold text-slate-400">
               <Link href="/privacy-policy" className="hover:text-blue-400 transition-colors">
                 Privacy Policy
@@ -118,7 +140,7 @@ export default function RootLayout({
             {/* Prominent Mandatory Legal Disclaimer */}
             <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-2xl max-w-4xl mx-auto text-left text-[11px] text-slate-400 leading-relaxed space-y-1">
               <p className="font-semibold text-slate-300">
-                Disclaimer: TermsScanner provides preliminary, automated compliance analysis for informational purposes only. It does not constitute legal advice and does not create an attorney-client relationship. We assume no responsibility or liability for inaccuracies, omissions, or legal damages arising from the use of this tool. Always consult a certified attorney for official compliance verification.
+                Disclaimer: TermsScanner provides automated heuristic and rule-based compliance analysis for informational purposes only. It does not constitute formal legal advice, auditing certification, or an attorney-client relationship. We accept no liability for regulatory penalties or omissions. Consult a qualified attorney for legal compliance.
               </p>
             </div>
 

@@ -4,6 +4,7 @@ export interface DetectedClause {
   id: string;
   clauseName: string;
   criticality: 'High' | 'Medium' | 'Low';
+  description: string;
   matchedSnippet: string;
 }
 
@@ -11,6 +12,7 @@ export interface MissingClause {
   id: string;
   clauseName: string;
   criticality: 'High' | 'Medium' | 'Low';
+  description: string;
   missingMessage: string;
 }
 
@@ -18,6 +20,7 @@ export interface FrameworkResult {
   frameworkId: string;
   frameworkName: string;
   description: string;
+  category: string;
   score: number; // 0 to 100
   totalRules: number;
   passedCount: number;
@@ -35,25 +38,25 @@ export interface UnifiedScanSummary {
 }
 
 /**
- * 100% Offline Client-Side Compliance Scanner
- * Executes regex rules strictly inside the browser without transmitting data anywhere.
+ * 100% Client-Side Compliance Scanner
+ * Executes regex tests locally in browser memory with ZERO server calls.
  */
 export function scanDocument(
   text: string,
-  selectedFrameworks: string[] = ['All']
+  frameworkIds: string[] = ['All']
 ): UnifiedScanSummary {
   const normalizedText = text.replace(/\s+/g, ' ');
-  const frameworkKeys = Object.keys(COMPLIANCE_FRAMEWORKS);
+  const allKeys = Object.keys(COMPLIANCE_FRAMEWORKS);
   
-  const targetFrameworkIds = selectedFrameworks.includes('All') || selectedFrameworks.length === 0
-    ? frameworkKeys
-    : frameworkKeys.filter(key => selectedFrameworks.includes(key));
+  const targetIds = (frameworkIds.includes('All') || frameworkIds.includes('all') || frameworkIds.length === 0)
+    ? allKeys
+    : allKeys.filter(key => frameworkIds.map(id => id.toLowerCase()).includes(key.toLowerCase()));
 
   const frameworkResults: FrameworkResult[] = [];
   let totalScoreSum = 0;
 
-  for (const frameworkId of targetFrameworkIds) {
-    const framework: ComplianceFramework = COMPLIANCE_FRAMEWORKS[frameworkId];
+  for (const fId of targetIds) {
+    const framework: ComplianceFramework = COMPLIANCE_FRAMEWORKS[fId];
     if (!framework) continue;
 
     const detectedClauses: DetectedClause[] = [];
@@ -63,29 +66,31 @@ export function scanDocument(
       const match = normalizedText.match(rule.regexPattern);
 
       if (rule.isNegativeRule) {
-        // For negative rules (e.g. PCI prohibited CVV storage): finding a match is a failure!
+        // Finding a match in a negative rule means a security violation!
         if (match) {
           missingClauses.push({
             id: rule.id,
             clauseName: rule.clauseName,
             criticality: rule.criticality,
-            missingMessage: rule.missingMessage + ` (Matched forbidden pattern: "${match[0].slice(0, 60)}")`
+            description: rule.description,
+            missingMessage: `${rule.missingMessage} (Matched snippet: "${match[0].slice(0, 60)}")`
           });
         } else {
           detectedClauses.push({
             id: rule.id,
             clauseName: rule.clauseName,
             criticality: rule.criticality,
-            matchedSnippet: 'Compliant: No prohibited data storage patterns detected.'
+            description: rule.description,
+            matchedSnippet: 'Compliant: No prohibited data storage matched.'
           });
         }
       } else {
-        // Standard rule: match means passed, no match means missing
         if (match) {
           detectedClauses.push({
             id: rule.id,
             clauseName: rule.clauseName,
             criticality: rule.criticality,
+            description: rule.description,
             matchedSnippet: match[0].length > 120 ? match[0].slice(0, 120) + '...' : match[0]
           });
         } else {
@@ -93,6 +98,7 @@ export function scanDocument(
             id: rule.id,
             clauseName: rule.clauseName,
             criticality: rule.criticality,
+            description: rule.description,
             missingMessage: rule.missingMessage
           });
         }
@@ -110,6 +116,7 @@ export function scanDocument(
       frameworkId: framework.id,
       frameworkName: framework.name,
       description: framework.description,
+      category: framework.category,
       score,
       totalRules,
       passedCount,
