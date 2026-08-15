@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { RiskFinding, AnalyzeResponsePayload } from '@/lib/types';
 import { RiskCard } from './RiskCard';
-import { ShieldAlert, AlertOctagon, CheckCircle, Download, FileText, Search, Filter, ShieldCheck, RefreshCw } from 'lucide-react';
+import { ShieldAlert, AlertOctagon, CheckCircle, Download, FileText, Search, Filter, ShieldCheck, RefreshCw, ArrowLeft } from 'lucide-react';
 
 interface RiskDashboardProps {
   data: AnalyzeResponsePayload;
@@ -17,21 +17,29 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
   const findings = data.findings || [];
   const summary = data.summary || {
     totalClauses: findings.length,
-    highRiskCount: findings.filter(f => f.riskLevel === 'High').length,
-    mediumRiskCount: findings.filter(f => f.riskLevel === 'Medium').length,
-    lowRiskCount: findings.filter(f => f.riskLevel === 'Low').length,
-    overallRiskScore: Math.min(100, (findings.filter(f => f.riskLevel === 'High').length * 25) + (findings.filter(f => f.riskLevel === 'Medium').length * 10))
+    highRiskCount: findings.filter(f => ['CRITICAL', 'HIGH', 'High'].includes(f.riskLevel)).length,
+    mediumRiskCount: findings.filter(f => ['MEDIUM', 'Medium'].includes(f.riskLevel)).length,
+    lowRiskCount: findings.filter(f => ['LOW', 'Low'].includes(f.riskLevel)).length,
+    overallRiskScore: Math.min(100, (findings.filter(f => ['CRITICAL', 'HIGH', 'High'].includes(f.riskLevel)).length * 25) + (findings.filter(f => ['MEDIUM', 'Medium'].includes(f.riskLevel)).length * 10))
   };
 
   // Filtered findings based on tab & search query
   const filteredFindings = useMemo(() => {
     return findings.filter((item) => {
-      const matchesLevel = filterLevel === 'All' || item.riskLevel === filterLevel;
+      const levelStr = String(item.riskLevel).toUpperCase();
+      const matchesLevel =
+        filterLevel === 'All' ||
+        (filterLevel === 'High' && (levelStr === 'HIGH' || levelStr === 'CRITICAL')) ||
+        (filterLevel === 'Medium' && levelStr === 'MEDIUM') ||
+        (filterLevel === 'Low' && levelStr === 'LOW');
+
       const matchesSearch =
         searchQuery.trim() === '' ||
         item.quote.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.explanation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.title && item.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase()));
+
       return matchesLevel && matchesSearch;
     });
   }, [findings, filterLevel, searchQuery]);
@@ -49,13 +57,14 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
 
   // Export as Markdown File
   const exportMarkdown = () => {
-    let md = `# PrivacyLens Audit Report: ${data.extractedTitle || 'Legal Document'}\n\n`;
+    let md = `# TermsScanner Audit Report: ${data.extractedTitle || 'Legal Document'}\n\n`;
     md += `**Overall Risk Score:** ${summary.overallRiskScore}/100\n`;
+    md += `**Scan Mode:** ${data.mode === 'instant' ? 'Instant Regex Engine' : 'Deep AI Scan (Gemini)'}\n`;
     md += `**Total Scanned Clauses:** ${summary.totalClauses} | **High Risk:** ${summary.highRiskCount} | **Medium Risk:** ${summary.mediumRiskCount} | **Low/Safe:** ${summary.lowRiskCount}\n\n`;
     md += `---\n\n`;
 
     findings.forEach((f, idx) => {
-      md += `### ${idx + 1}. [${f.riskLevel.toUpperCase()} RISK] ${f.category || 'Clause'}\n`;
+      md += `### ${idx + 1}. [${String(f.riskLevel).toUpperCase()} RISK] ${f.title || f.category || 'Clause'}\n`;
       md += `> "${f.quote}"\n\n`;
       md += `**Why it is bad:** ${f.explanation}\n\n`;
       md += `**💡 Counter-Proposal:** ${f.suggestion}\n\n`;
@@ -66,7 +75,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `PrivacyLens-Audit-Report-${Date.now()}.md`;
+    a.download = `TermsScanner-Audit-Report-${Date.now()}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -78,7 +87,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `PrivacyLens-Findings-${Date.now()}.json`;
+    a.download = `TermsScanner-Findings-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -89,8 +98,27 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto my-8 px-4 space-y-8 animate-fadeIn">
+    <div className="w-full max-w-5xl mx-auto my-8 px-4 space-y-6 animate-fadeIn">
       
+      {/* Top Bar with Prominent Back Button */}
+      <div className="flex items-center justify-between pt-2">
+        <button
+          type="button"
+          onClick={onReset}
+          className="inline-flex items-center space-x-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-blue-400 hover:text-blue-300 border border-slate-800 hover:border-blue-500/60 rounded-xl text-xs font-extrabold transition-all shadow-md group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span>Back to Scanner</span>
+        </button>
+
+        <div className="flex items-center space-x-2 text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1.5 border border-slate-800 rounded-xl">
+          <span>Engine:</span>
+          <strong className="text-white">
+            {data.mode === 'instant' ? '⚡ Instant Regex' : '🧠 Gemini 2.5 Flash'}
+          </strong>
+        </div>
+      </div>
+
       {/* Overview Stats Dashboard Header */}
       <div className="p-6 sm:p-8 bg-slate-900/90 border border-slate-800 rounded-3xl shadow-2xl backdrop-blur-xl">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-800">
@@ -180,7 +208,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
 
           <div className="p-4 bg-rose-950/40 border border-rose-900/60 rounded-2xl">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-rose-300 font-semibold">High Risk</span>
+              <span className="text-xs text-rose-300 font-semibold">High / Critical Risk</span>
               <AlertOctagon className="w-4 h-4 text-rose-400" />
             </div>
             <span className="block text-2xl font-bold text-rose-200 mt-1">
@@ -235,7 +263,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
                 : 'text-slate-400 hover:text-rose-300'
             }`}
           >
-            High Risk ({summary.highRiskCount})
+            High/Critical ({summary.highRiskCount})
           </button>
           <button
             type="button"
@@ -246,7 +274,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({ data, onReset }) =
                 : 'text-slate-400 hover:text-amber-300'
             }`}
           >
-            Medium Risk ({summary.mediumRiskCount})
+            Medium ({summary.mediumRiskCount})
           </button>
           <button
             type="button"
