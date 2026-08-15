@@ -62,10 +62,11 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "",
+    google: "google62ce07a5a56199e5",
   },
   other: {
-    "google-adsense-account": "ca-pub-5058901049330069"
+    "google-adsense-account": "ca-pub-5058901049330069",
+    "google-site-verification": "google62ce07a5a56199e5"
   }
 };
 
@@ -83,9 +84,7 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <head>
         {/* Google Search Console Meta Verification Tag */}
-        {process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && (
-          <meta name="google-site-verification" content={process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION} />
-        )}
+        <meta name="google-site-verification" content="google62ce07a5a56199e5" />
 
         {/* Google AdSense Meta Verification */}
         <meta name="google-adsense-account" content="ca-pub-5058901049330069" />
