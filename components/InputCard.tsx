@@ -4,14 +4,17 @@ import React, { useState, useRef } from 'react';
 import { Globe, Upload, FileText, Sparkles, AlertCircle, FileCode, Clock, ArrowRight, Check } from 'lucide-react';
 import { extractTextFromPDF } from '@/lib/pdf-parser';
 import { SAMPLE_DOCUMENTS } from '@/lib/sample-docs';
-import { SampleDoc } from '@/lib/types';
+import { SampleDoc, ScanMode } from '@/lib/types';
+import { ModeToggle } from './ModeToggle';
 
 interface InputCardProps {
-  onAnalyze: (payload: { type: 'url' | 'text'; content: string; compareWithHistory?: boolean }) => void;
+  onAnalyze: (payload: { type: 'url' | 'text'; content: string; mode: ScanMode; compareWithHistory?: boolean }) => void;
   isLoading: boolean;
+  mode: ScanMode;
+  setMode: (mode: ScanMode) => void;
 }
 
-export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading }) => {
+export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading, mode, setMode }) => {
   const [activeTab, setActiveTab] = useState<'url' | 'pdf' | 'text' | 'samples'>('url');
   
   // URL Tab State
@@ -44,6 +47,7 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading }) =>
     onAnalyze({
       type: 'url',
       content: url.trim(),
+      mode,
       compareWithHistory
     });
   };
@@ -66,7 +70,8 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading }) =>
       // Submit extracted text to audit engine
       onAnalyze({
         type: 'text',
-        content: extractedText
+        content: extractedText,
+        mode
       });
     } catch (err: any) {
       console.error(err);
@@ -101,7 +106,8 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading }) =>
 
     onAnalyze({
       type: 'text',
-      content: rawText.trim()
+      content: rawText.trim(),
+      mode
     });
   };
 
@@ -115,12 +121,17 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading }) =>
 
     onAnalyze({
       type: 'text',
-      content: sample.text
+      content: sample.text,
+      mode
     });
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto my-6 px-4">
+    <div className="w-full max-w-4xl mx-auto my-6 px-4 space-y-4">
+      
+      {/* Dual-Mode Toggle Switch */}
+      <ModeToggle mode={mode} setMode={setMode} />
+
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl shadow-blue-950/30 overflow-hidden backdrop-blur-xl transition-all">
         
         {/* Tab Navigation Header */}
@@ -200,11 +211,11 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading }) =>
                   />
                   <button
                     type="submit"
-                    disabled={isLoading || !url.trim()}
+                    disabled={isLoading || url.trim() === ''}
                     className="absolute right-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm rounded-lg shadow-md shadow-blue-600/30 transition-all disabled:opacity-50 flex items-center space-x-1.5"
                   >
                     <Sparkles className="w-4 h-4" />
-                    <span>Scan URL</span>
+                    <span>{mode === 'instant' ? 'Instant Scan' : 'Scan URL'}</span>
                   </button>
                 </div>
               </div>
@@ -299,7 +310,7 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading }) =>
                   className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all disabled:opacity-50 flex items-center space-x-2"
                 >
                   <Sparkles className="w-4 h-4" />
-                  <span>Audit Text</span>
+                  <span>{mode === 'instant' ? 'Instant Audit Text' : 'Deep AI Audit Text'}</span>
                 </button>
               </div>
             </form>
@@ -309,7 +320,7 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading }) =>
           {activeTab === 'samples' && (
             <div className="space-y-3">
               <p className="text-xs text-slate-400 mb-3">
-                Click any sample contract below to test PrivacyLens immediately with realistic predatory clauses:
+                Click any sample contract below to test TermsScanner immediately with realistic predatory clauses:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {SAMPLE_DOCUMENTS.map((sample) => (
@@ -337,7 +348,7 @@ export const InputCard: React.FC<InputCardProps> = ({ onAnalyze, isLoading }) =>
                       </p>
                     </div>
                     <div className="mt-3 flex items-center space-x-1 text-[11px] text-blue-400 font-semibold">
-                      <span>Click to scan sample</span>
+                      <span>Scan sample ({mode === 'instant' ? '⚡ Instant' : '🧠 Deep AI'})</span>
                       <Check className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>

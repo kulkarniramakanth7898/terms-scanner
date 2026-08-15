@@ -1,4 +1,5 @@
 export type RiskLevel = 'High' | 'Medium' | 'Low';
+export type ScanMode = 'instant' | 'ai';
 
 export interface RiskFinding {
   id?: string;
@@ -10,8 +11,10 @@ export interface RiskFinding {
 }
 
 export interface AnalyzeRequestPayload {
-  type: 'url' | 'text';
-  content: string;
+  type?: 'url' | 'text';
+  content?: string;
+  text?: string;
+  mode?: ScanMode;
   compareWithHistory?: boolean;
 }
 
@@ -19,6 +22,7 @@ export interface AnalyzeResponsePayload {
   success: boolean;
   findings: RiskFinding[];
   sourceType: 'url' | 'text' | 'pdf';
+  mode?: ScanMode;
   rawTextLength: number;
   extractedTitle?: string;
   summary?: {

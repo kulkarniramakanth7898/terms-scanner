@@ -7,10 +7,11 @@ import { InputCard } from '@/components/InputCard';
 import { LoadingState } from '@/components/LoadingState';
 import { RiskDashboard } from '@/components/RiskDashboard';
 import { TimeTravelDiff } from '@/components/TimeTravelDiff';
-import { AnalyzeResponsePayload, TimeTravelResponsePayload } from '@/lib/types';
+import { AnalyzeResponsePayload, TimeTravelResponsePayload, ScanMode } from '@/lib/types';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<ScanMode>('ai');
   const [analysisResult, setAnalysisResult] = useState<AnalyzeResponsePayload | null>(null);
   
   // Time Travel states
@@ -20,7 +21,7 @@ export default function Home() {
   // Error Banner
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleAnalyze = async (payload: { type: 'url' | 'text'; content: string; compareWithHistory?: boolean }) => {
+  const handleAnalyze = async (payload: { type: 'url' | 'text'; content: string; mode: ScanMode; compareWithHistory?: boolean }) => {
     setIsLoading(true);
     setAnalysisResult(null);
     setTimeTravelData(null);
@@ -44,7 +45,12 @@ export default function Home() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: payload.type, content: payload.content })
+        body: JSON.stringify({ 
+          type: payload.type, 
+          content: payload.content,
+          text: payload.content,
+          mode: payload.mode 
+        })
       });
 
       const data: AnalyzeResponsePayload = await res.json();
@@ -80,13 +86,18 @@ export default function Home() {
         {/* Hero Banner */}
         <Hero />
 
-        {/* Input Card Container */}
+        {/* Input Card Container with Dual-Mode Toggle */}
         {!analysisResult && !isLoading && (
-          <InputCard onAnalyze={handleAnalyze} isLoading={isLoading} />
+          <InputCard 
+            onAnalyze={handleAnalyze} 
+            isLoading={isLoading} 
+            mode={mode} 
+            setMode={setMode} 
+          />
         )}
 
-        {/* Loading Scanner Animation */}
-        {isLoading && <LoadingState />}
+        {/* Dynamic Loading Scanner Animation */}
+        {isLoading && <LoadingState mode={mode} />}
 
         {/* Error Notification */}
         {errorMessage && (
