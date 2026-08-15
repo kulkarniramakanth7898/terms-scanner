@@ -1,0 +1,7 @@
+/ads.txt
+  Cache-Control: public, max-age=0, must-revalidate
+  Access-Control-Allow-Origin: *
+
+/google62ce07a5a56199e5.html
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *

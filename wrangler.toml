@@ -1,0 +1,8 @@
+name = "terms-scanner"
+pages_build_output_dir = ".vercel/output/static"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+GEMINI_API_KEY = "AIzaSyBB3SVdYu2JX31wJFxj7X0YbvhwkB6HE-I"
+NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION = "google62ce07a5a56199e5"
