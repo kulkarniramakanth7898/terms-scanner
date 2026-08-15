@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { RiskFinding, AnalyzeResponsePayload, ScanMode } from '@/lib/types';
+import { RiskFinding, AnalyzeResponsePayload, ScanMode, RiskLevel } from '@/lib/types';
 import { analyzeWithoutAI } from '@/lib/ruleEngine';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { type, content, text: inputText, mode = 'ai' } = body || {};
+    const { text: inputText, content, type, mode = 'instant' } = body || {};
 
     const rawInput = (inputText || content || '').trim();
 
     if (!rawInput) {
       return NextResponse.json(
-        { success: false, error: 'Text or Content parameter is required.' },
+        { success: false, error: 'Text input parameter is required.' },
         { status: 400 }
       );
     }
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     let extractedTitle = 'Legal Document';
     const effectiveType = type || (rawInput.startsWith('http://') || rawInput.startsWith('https://') ? 'url' : 'text');
 
-    // Handle URL extraction with Cheerio
+    // Handle URL extraction with Cheerio if a website URL was submitted
     if (effectiveType === 'url') {
       try {
         let urlString = rawInput;
@@ -45,7 +45,6 @@ export async function POST(req: NextRequest) {
         const html = await fetchResponse.text();
         const $ = cheerio.load(html);
 
-        // Remove unneeded elements
         $('script, style, nav, header, footer, aside, noscript, iframe, svg, form, [role="navigation"]').remove();
 
         extractedTitle = $('title').text().trim() || $('h1').first().text().trim() || 'Web Policy Document';
@@ -66,7 +65,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           { 
             success: false, 
-            error: err.message || 'Failed to scrape text from specified URL. Please check the link or paste the text directly.' 
+            error: err.message || 'Failed to scrape text from specified URL. Please check the link or paste text directly.' 
           },
           { status: 422 }
         );
@@ -81,9 +80,31 @@ export async function POST(req: NextRequest) {
 
     let findings: RiskFinding[] = [];
 
-    // MODE 1: INSTANT RULE ENGINE (Zero Cost, Instant Regex)
+    // MODE 1: INSTANT REGEX SCAN (Zero-Cost Rule Engine)
     if (mode === 'instant') {
-      findings = analyzeWithoutAI(textToAnalyze);
+      const rawRuleResults = analyzeWithoutAI(textToAnalyze);
+
+      findings = rawRuleResults.map((rule, idx) => ({
+        id: `instant-${rule.id}-${idx}`,
+        title: rule.title,
+        riskLevel: rule.level as RiskLevel,
+        quote: rule.matchedText || textToAnalyze.slice(0, 150),
+        explanation: rule.description,
+        suggestion: getSuggestionForCategory(rule.category),
+        category: rule.category
+      }));
+
+      if (findings.length === 0) {
+        findings.push({
+          id: 'instant-safe-1',
+          title: 'No Critical Patterns Detected',
+          riskLevel: 'Low',
+          quote: textToAnalyze.slice(0, 180) + '...',
+          explanation: 'No immediate predatory red flag patterns matched in the instant scanner.',
+          suggestion: 'Switch to Deep AI Scan for nuanced legal interpretation.',
+          category: 'Standard Terms'
+        });
+      }
     } 
     // MODE 2: DEEP AI SCAN (Gemini API)
     else {
@@ -100,6 +121,7 @@ Respond ONLY in valid JSON format as an array of objects. Do not include any int
 JSON Schema:
 [
   {
+    "title": "Short title of the clause risk",
     "riskLevel": "High" | "Medium" | "Low",
     "quote": "exact text from doc",
     "explanation": "why it is bad in plain simple English",
@@ -122,7 +144,8 @@ ${textToAnalyze}`;
           if (Array.isArray(parsed)) {
             findings = parsed.map((item, idx) => ({
               id: `ai-finding-${idx}-${Date.now()}`,
-              riskLevel: ['High', 'Medium', 'Low'].includes(item.riskLevel) ? item.riskLevel : 'Medium',
+              title: item.title || item.category || 'Clause Risk',
+              riskLevel: ['High', 'Medium', 'Low', 'CRITICAL', 'HIGH', 'MEDIUM'].includes(item.riskLevel) ? item.riskLevel : 'Medium',
               quote: item.quote || 'Clause quote unavailable',
               explanation: item.explanation || 'Potential risk detected in clause.',
               suggestion: item.suggestion || 'Negotiate to limit scope and add mutual protections.',
@@ -130,19 +153,37 @@ ${textToAnalyze}`;
             }));
           }
         } catch (aiError) {
-          console.warn('Gemini API call failed, running instant rule engine fallback:', aiError);
-          findings = analyzeWithoutAI(textToAnalyze);
+          console.warn('Gemini API call failed, falling back to instant rule engine:', aiError);
+          const rawRuleResults = analyzeWithoutAI(textToAnalyze);
+          findings = rawRuleResults.map((rule, idx) => ({
+            id: `fallback-${rule.id}-${idx}`,
+            title: rule.title,
+            riskLevel: rule.level as RiskLevel,
+            quote: rule.matchedText || textToAnalyze.slice(0, 150),
+            explanation: rule.description,
+            suggestion: getSuggestionForCategory(rule.category),
+            category: rule.category
+          }));
         }
       } else {
-        // Fallback to rule engine if API key is unconfigured
-        findings = analyzeWithoutAI(textToAnalyze);
+        // Fallback if API key is not configured
+        const rawRuleResults = analyzeWithoutAI(textToAnalyze);
+        findings = rawRuleResults.map((rule, idx) => ({
+          id: `fallback-${rule.id}-${idx}`,
+          title: rule.title,
+          riskLevel: rule.level as RiskLevel,
+          quote: rule.matchedText || textToAnalyze.slice(0, 150),
+          explanation: rule.description,
+          suggestion: getSuggestionForCategory(rule.category),
+          category: rule.category
+        }));
       }
     }
 
     // Calculate Summary Stats
-    const highCount = findings.filter(f => f.riskLevel === 'High').length;
-    const medCount = findings.filter(f => f.riskLevel === 'Medium').length;
-    const lowCount = findings.filter(f => f.riskLevel === 'Low').length;
+    const highCount = findings.filter(f => ['CRITICAL', 'HIGH', 'High'].includes(f.riskLevel)).length;
+    const medCount = findings.filter(f => ['MEDIUM', 'Medium'].includes(f.riskLevel)).length;
+    const lowCount = findings.filter(f => ['Low', 'LOW'].includes(f.riskLevel)).length;
     
     const rawScore = (highCount * 25) + (medCount * 10) + (lowCount * 3);
     const overallRiskScore = Math.min(100, Math.max(0, rawScore));
@@ -170,5 +211,24 @@ ${textToAnalyze}`;
       { success: false, error: error.message || 'An error occurred while auditing the document.' },
       { status: 500 }
     );
+  }
+}
+
+function getSuggestionForCategory(category: string): string {
+  switch (category) {
+    case 'Data Privacy':
+      return 'Demand an opt-out clause for third-party data sharing and enforce zero biometric retention.';
+    case 'Legal Rights':
+      return 'Request small-claims court exemption and mutual arbitration in your home jurisdiction.';
+    case 'Terms Modifications':
+      return 'Require 30 days prior written notice before material changes take effect.';
+    case 'Intellectual Property':
+      return 'Limit content license strictly to what is required for service operation.';
+    case 'Financial Risk':
+      return 'Require electronic 1-click cancellation and annual email renewal reminders.';
+    case 'User Rights':
+      return 'Require written justification and 14-day appeal window before account suspension.';
+    default:
+      return 'Negotiate to add mutual protections and limit unilateral provider rights.';
   }
 }

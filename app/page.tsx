@@ -11,7 +11,7 @@ import { AnalyzeResponsePayload, TimeTravelResponsePayload, ScanMode } from '@/l
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<ScanMode>('ai');
+  const [mode, setMode] = useState<ScanMode>('instant');
   const [analysisResult, setAnalysisResult] = useState<AnalyzeResponsePayload | null>(null);
   
   // Time Travel states

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertOctagon, ShieldAlert, CheckCircle, Copy, Check, Lightbulb, Tag } from 'lucide-react';
+import { AlertOctagon, ShieldAlert, CheckCircle, Copy, Check, Lightbulb, Tag, Flame } from 'lucide-react';
 import { RiskFinding } from '@/lib/types';
 
 interface RiskCardProps {
@@ -19,24 +19,30 @@ export const RiskCard: React.FC<RiskCardProps> = ({ finding }) => {
     }
   };
 
-  const isHigh = finding.riskLevel === 'High';
-  const isMedium = finding.riskLevel === 'Medium';
-  const isLow = finding.riskLevel === 'Low';
+  const levelStr = String(finding.riskLevel).toUpperCase();
+  const isCritical = levelStr === 'CRITICAL';
+  const isHigh = levelStr === 'HIGH';
+  const isMedium = levelStr === 'MEDIUM';
+  const isLow = levelStr === 'LOW';
 
   // Styling based on risk level
-  const cardBorder = isHigh
-    ? 'border-rose-900/60 shadow-rose-950/20 hover:border-rose-600/80 bg-slate-900/90'
+  const cardBorder = isCritical
+    ? 'border-rose-600/80 shadow-rose-950/40 bg-slate-900/90'
+    : isHigh
+    ? 'border-rose-900/60 shadow-rose-950/20 bg-slate-900/90'
     : isMedium
-    ? 'border-amber-900/60 shadow-amber-950/20 hover:border-amber-600/80 bg-slate-900/90'
-    : 'border-emerald-900/60 shadow-emerald-950/20 hover:border-emerald-600/80 bg-slate-900/90';
+    ? 'border-amber-900/60 shadow-amber-950/20 bg-slate-900/90'
+    : 'border-emerald-900/60 shadow-emerald-950/20 bg-slate-900/90';
 
-  const badgeBg = isHigh
+  const badgeBg = isCritical
+    ? 'bg-rose-900 text-white border-rose-500 shadow-sm animate-pulse'
+    : isHigh
     ? 'bg-rose-950 text-rose-300 border-rose-800/80'
     : isMedium
     ? 'bg-amber-950 text-amber-300 border-amber-800/80'
     : 'bg-emerald-950 text-emerald-300 border-emerald-800/80';
 
-  const quoteBorderColor = isHigh
+  const quoteBorderColor = isCritical || isHigh
     ? 'border-rose-500/80 bg-rose-950/20 text-rose-100'
     : isMedium
     ? 'border-amber-500/80 bg-amber-950/20 text-amber-100'
@@ -48,9 +54,14 @@ export const RiskCard: React.FC<RiskCardProps> = ({ finding }) => {
       {/* Header Bar: Status Icon & Risk Level & Category */}
       <div className="flex items-center justify-between gap-2 mb-4">
         <div className="flex items-center space-x-2.5">
-          {isHigh && (
+          {isCritical && (
+            <div className="p-2 rounded-xl bg-rose-950/90 text-rose-400 border border-rose-600/80 shadow-md">
+              <Flame className="w-5 h-5 animate-bounce text-rose-500" />
+            </div>
+          )}
+          {isHigh && !isCritical && (
             <div className="p-2 rounded-xl bg-rose-950/90 text-rose-400 border border-rose-800/80 shadow-md">
-              <AlertOctagon className="w-5 h-5 animate-pulse" />
+              <AlertOctagon className="w-5 h-5" />
             </div>
           )}
           {isMedium && (
@@ -64,8 +75,8 @@ export const RiskCard: React.FC<RiskCardProps> = ({ finding }) => {
             </div>
           )}
           <div>
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${badgeBg}`}>
-              {finding.riskLevel} Risk Clause
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider border ${badgeBg}`}>
+              {finding.riskLevel} Risk
             </span>
           </div>
         </div>
@@ -78,10 +89,17 @@ export const RiskCard: React.FC<RiskCardProps> = ({ finding }) => {
         )}
       </div>
 
+      {/* Clause Title if provided */}
+      {finding.title && (
+        <h3 className="text-base font-bold text-white mb-2">
+          {finding.title}
+        </h3>
+      )}
+
       {/* Exact Quote Block */}
       <div className="mb-4">
         <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-          Scanned Clause Quote:
+          Matched Clause Quote:
         </span>
         <blockquote className={`p-4 border-l-4 rounded-r-xl italic text-sm leading-relaxed font-serif ${quoteBorderColor}`}>
           &ldquo;{finding.quote}&rdquo;

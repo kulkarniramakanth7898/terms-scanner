@@ -1,4 +1,4 @@
-export type RiskLevel = 'High' | 'Medium' | 'Low';
+export type RiskLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'High' | 'Medium' | 'Low';
 export type ScanMode = 'instant' | 'ai';
 
 export interface RiskFinding {
@@ -8,12 +8,14 @@ export interface RiskFinding {
   explanation: string;
   suggestion: string;
   category?: string;
+  title?: string;
+  matchedText?: string;
 }
 
 export interface AnalyzeRequestPayload {
-  type?: 'url' | 'text';
-  content?: string;
   text?: string;
+  content?: string;
+  type?: 'url' | 'text';
   mode?: ScanMode;
   compareWithHistory?: boolean;
 }

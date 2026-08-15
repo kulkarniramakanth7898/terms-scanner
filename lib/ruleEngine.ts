@@ -1,115 +1,40 @@
-import { RiskFinding } from './types';
-
-export interface RuleFinding {
+export interface RiskResult {
+  id: string;
+  category: string;
+  level: "CRITICAL" | "HIGH" | "MEDIUM";
   title: string;
   description: string;
-  riskLevel: 'High' | 'Medium' | 'Low';
-  quote?: string;
-  suggestion?: string;
-  category?: string;
+  matchedText?: string;
 }
 
-export function analyzeWithoutAI(text: string): RiskFinding[] {
-  if (!text || text.trim().length === 0) {
-    return [];
-  }
+const RISK_RULES = [
+  { id: "DATA_SELLING", category: "Data Privacy", level: "CRITICAL", title: "Data Selling & Monetization", description: "They claim the right to sell, rent, or trade your personal data to third parties.", pattern: /(sell|rent|monetize|trade|exchange|share).*?(personal data|personal information|user data|your information).*?(third part|affiliate|partner|advertiser)/i },
+  { id: "FORCED_ARBITRATION", category: "Legal Rights", level: "CRITICAL", title: "Forced Arbitration & Class Action Waiver", description: "You surrender your right to sue them in court or join a class-action lawsuit.", pattern: /(mandatory|binding).*?(arbitration)|(waive|give up|surrender).*?(right to).*?(class action|jury trial|court)/i },
+  { id: "UNILATERAL_CHANGE", category: "Terms Modifications", level: "HIGH", title: "Unilateral Changes Without Notice", description: "They can change the contract at any time without telling you.", pattern: /(reserve the right to).*?(modify|change|update|amend).*?(terms|agreement|policy).*?(at any time|without prior notice|without notice)/i },
+  { id: "IP_GRAB", category: "Intellectual Property", level: "HIGH", title: "Broad IP & Content License Grab", description: "You give them a permanent, free license to use or sell your work.", pattern: /(grant us|grant).*?(perpetual|irrevocable|worldwide|royalty-free|transferable).*?(license|right).*?(use|reproduce|modify|distribute|display)/i },
+  { id: "GEO_TRACKING", category: "Data Privacy", level: "MEDIUM", title: "Invasive Tracking & Geolocation", description: "They track your precise physical location or cross-site browsing.", pattern: /(collect|track|gather).*?(precise location|geolocation|gps|cross-site|browsing history|device fingerprint)/i },
+  { id: "LIABILITY_LIMIT", category: "Legal Rights", level: "HIGH", title: "Extreme Limitation of Liability", description: "They cap their financial responsibility to almost nothing if they cause damages.", pattern: /(limitation of liability|maximum liability|aggregate liability).*?(shall not exceed|limited to).*?(\$0|zero|amount paid by you|50|100)/i },
+  { id: "INDEMNIFICATION", category: "Financial Risk", level: "HIGH", title: "User Indemnification Clause", description: "You agree to pay their legal fees if they get sued because of you.", pattern: /(agree to).*?(indemnify|hold harmless|defend).*?(company|us).*?(from and against|against).*?(claims|damages|liabilities|fees|lawsuits)/i },
+  { id: "ACCOUNT_TERMINATION", category: "User Rights", level: "MEDIUM", title: "Arbitrary Account Termination", description: "They can delete your account and data for any reason, with no appeal.", pattern: /(reserve the right to).*?(terminate|suspend|delete).*?(account|access).*?(at any time|for any reason|without notice|at our sole discretion)/i },
+  { id: "AUTO_RENEWAL", category: "Financial Risk", level: "MEDIUM", title: "Automatic Renewal Trap", description: "Your subscription auto-renews unless canceled.", pattern: /(subscription|membership|plan).*?(automatically renew|auto-renew).*?(unless you cancel|prior to the end)/i },
+  { id: "DATA_RETENTION", category: "Data Privacy", level: "HIGH", title: "Indefinite Data Retention", description: "They keep your personal data forever, even after you delete your account.", pattern: /(retain|keep|store).*?(your data|information|personal data).*?(indefinitely|for as long as|perpetually|even after.*?(deletion|termination))/i }
+];
 
-  const findings: RiskFinding[] = [];
-  let idCounter = 1;
-
-  const rules: Array<{
-    title: string;
-    regex: RegExp;
-    riskLevel: 'High' | 'Medium' | 'Low';
-    category: string;
-    explanation: string;
-    suggestion: string;
-  }> = [
-    {
-      title: 'Data Selling & Third-Party Data Sharing',
-      regex: /(sell.*user data|share.*third-party|data brokers|debt collection|biometric.*face|real-time gps|location telemetry|150 third-party)/i,
-      riskLevel: 'High',
-      category: 'Data Privacy',
-      explanation: 'The agreement permits selling, sharing, or monetizing your personal data, location telemetry, or biometric identifiers with third-party advertisers or data brokers.',
-      suggestion: 'Demand a strict opt-in clause prohibiting third-party data sales, and enforce zero biometric retention.'
-    },
-    {
-      title: 'Mandatory Binding Arbitration & Class Action Waiver',
-      regex: /(binding arbitration|waive.*class action|jurisdiction of the cayman|waive any right to.*jury trial|collective arbitration)/i,
-      riskLevel: 'High',
-      category: 'Arbitration & Disputes',
-      explanation: 'Forces you to give up your constitutional right to a jury trial or class action lawsuit, requiring private arbitration in remote or unfavorable legal jurisdictions.',
-      suggestion: 'Insist on a small-claims court exemption and mutual arbitration in your home jurisdiction with shared filing fees.'
-    },
-    {
-      title: 'Unilateral Policy & Price Changes Without Notice',
-      regex: /(unilateral|sole and absolute discretion|without prior notice|at any time without notice|reserve the right to modify|increase subscription fees)/i,
-      riskLevel: 'High',
-      category: 'Unilateral Changes',
-      explanation: 'The provider grants themselves unilateral authority to alter prices, terms, or service features at any time without giving you prior written notice or a cancellation right.',
-      suggestion: 'Require a mandatory 30-day prior written notice for material changes, with an explicit right to cancel without penalty.'
-    },
-    {
-      title: 'Perpetual & Irrevocable IP Ownership Grab',
-      regex: /(perpetual.*irrevocable.*royalty-free|assigns and transfers exclusively.*all right|prior unpatented inventions|non-working hours)/i,
-      riskLevel: 'High',
-      category: 'IP Ownership',
-      explanation: 'Claims perpetual, global ownership or unrestricted licensing rights over all user-submitted content, notes, or side projects created outside working hours.',
-      suggestion: 'Limit content licensing strictly to service delivery needs, with automatic license termination upon account deletion.'
-    },
-    {
-      title: 'Draconian Auto-Renewal & Non-Refundable Cancellation',
-      regex: /(automatically renew|90 days prior to the renewal|refunds are strictly prohibited|certified physical mail)/i,
-      riskLevel: 'Medium',
-      category: 'Auto-Renewal',
-      explanation: 'Enforces automatic multi-year renewals and restricts cancellations to onerous methods (e.g., physical certified mail 90 days in advance).',
-      suggestion: 'Require electronic 1-click cancellation and annual email renewal reminders 30 days prior to billing.'
-    },
-    {
-      title: 'Nominal Liability Cap & Unlimited User Indemnification',
-      regex: /(total aggregate liability.*limited to \$10|indemnify and hold harmless.*officers|maximum extent permitted)/i,
-      riskLevel: 'Medium',
-      category: 'Liability',
-      explanation: 'Caps the provider liability to a nominal amount ($10) while forcing you to absorb unlimited legal costs for third-party claims.',
-      suggestion: 'Establish a mutual liability cap equal to 12 months of service fees paid.'
-    }
-  ];
-
-  // Split text into sentences/paragraphs
-  const sentences = text.split(/(?<=[.!?])\s+/);
-
-  for (const sentence of sentences) {
-    const trimmed = sentence.trim();
-    if (trimmed.length < 15) continue;
-
-    for (const rule of rules) {
-      if (rule.regex.test(trimmed)) {
-        // Avoid duplicate quotes
-        if (!findings.some((f) => f.quote.includes(trimmed.slice(0, 35)))) {
-          findings.push({
-            id: `rule-${idCounter++}`,
-            riskLevel: rule.riskLevel,
-            quote: trimmed,
-            explanation: rule.explanation,
-            suggestion: rule.suggestion,
-            category: rule.category
-          });
-        }
-      }
+export function analyzeWithoutAI(text: string): RiskResult[] {
+  const detectedRisks: RiskResult[] = [];
+  const normalizedText = text.replace(/\s+/g, ' ');
+  for (const rule of RISK_RULES) {
+    const match = normalizedText.match(rule.pattern);
+    if (match) {
+      detectedRisks.push({
+        id: rule.id,
+        category: rule.category,
+        level: rule.level as "CRITICAL" | "HIGH" | "MEDIUM",
+        title: rule.title,
+        description: rule.description,
+        matchedText: match[0]
+      });
     }
   }
-
-  // Fallback if no specific regex matches
-  if (findings.length === 0) {
-    findings.push({
-      id: 'rule-generic-1',
-      riskLevel: 'Low',
-      quote: text.slice(0, 180) + '...',
-      explanation: 'No immediate predatory red flags detected in scanned excerpt using the instant rule engine.',
-      suggestion: 'Run a Deep AI Scan for nuanced legal interpretation or verify termination clauses manually.',
-      category: 'Standard Review'
-    });
-  }
-
-  return findings;
+  return detectedRisks;
 }
