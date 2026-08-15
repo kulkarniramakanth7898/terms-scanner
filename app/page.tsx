@@ -44,12 +44,17 @@ export default function Home() {
 
     const activeFrameworks = payload.selectedFrameworks || selectedFrameworks;
 
-    // 100% OFFLINE STEP: Execute local scanDocument rule engine immediately in browser
-    try {
-      const localCompliance = scanDocument(payload.content, activeFrameworks);
-      setComplianceSummary(localCompliance);
-    } catch (localErr) {
-      console.warn('Local scan error:', localErr);
+    // 100% OFFLINE STEP: Execute local scanDocument rule engine ONLY for instant scan mode
+    if (payload.mode === 'instant') {
+      try {
+        const localCompliance = scanDocument(payload.content, activeFrameworks);
+        setComplianceSummary(localCompliance);
+        setViewTab('compliance');
+      } catch (localErr) {
+        console.warn('Local scan error:', localErr);
+      }
+    } else {
+      setViewTab('riskCards');
     }
 
     // If URL & compareWithHistory enabled, trigger time travel in parallel

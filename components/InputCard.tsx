@@ -206,11 +206,13 @@ export const InputCard: React.FC<InputCardProps> = ({
         {/* Tab Body */}
         <div className="p-6">
           
-          {/* Framework Multi-Select Selector */}
-          <FrameworkSelector
-            selectedFrameworks={selectedFrameworks}
-            onChange={setSelectedFrameworks}
-          />
+          {/* Framework Multi-Select Selector - Available ONLY for Instant Scan */}
+          {mode === 'instant' && (
+            <FrameworkSelector
+              selectedFrameworks={selectedFrameworks}
+              onChange={setSelectedFrameworks}
+            />
+          )}
 
           {/* TAB 1: PASTE WEBSITE URL */}
           {activeTab === 'url' && (
