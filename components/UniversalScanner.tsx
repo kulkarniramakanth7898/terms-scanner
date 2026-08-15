@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Globe, Upload, FileText, Sparkles, AlertCircle, Lock, ShieldCheck, ShieldAlert, Zap, Brain, XCircle, CheckCircle2, SlidersHorizontal, Check } from 'lucide-react';
+import { Globe, Upload, FileText, Sparkles, AlertCircle, Lock, ShieldCheck, ShieldAlert, Zap, Brain, XCircle, CheckCircle2, SlidersHorizontal } from 'lucide-react';
 import { extractTextFromPDF } from '@/lib/pdf-parser';
 import { SAMPLE_DOCUMENTS } from '@/lib/sample-docs';
 import { AnalyzeResponsePayload } from '@/lib/types';
@@ -36,10 +36,10 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
   // LEVEL 1: Processing Engine (First Choice)
   const [engine, setEngine] = useState<'instant' | 'ai'>(defaultEngine);
 
-  // LEVEL 2: Scan Type (Second Choice)
+  // LEVEL 2: Scan Type (Second Choice - ONLY active when engine === 'instant')
   const [scanType, setScanType] = useState<'general' | 'regulatory'>(defaultScanType);
 
-  // LEVEL 3: Framework Selection (Appears ONLY when scanType === 'regulatory')
+  // LEVEL 3: Framework Selection (ONLY active when engine === 'instant' AND scanType === 'regulatory')
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>(defaultFrameworks);
 
   // Input Tabs & Files
@@ -56,7 +56,6 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [complianceSummary, setComplianceSummary] = useState<UnifiedScanSummary | null>(null);
   const [riskAnalysisPayload, setRiskAnalysisPayload] = useState<AnalyzeResponsePayload | null>(null);
-  const [viewTab, setViewTab] = useState<'compliance' | 'riskCards'>('compliance');
 
   // Toggle Framework Chip Selection
   const handleFrameworkToggle = (id: string) => {
@@ -77,44 +76,51 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
     }
   };
 
-  // Run Audit Logic based on Engine & Scan Type
+  // Run Audit Logic according to Strict Rules
   const executeScan = async (textToAudit: string) => {
     setIsLoading(true);
     setErrorMsg(null);
     setComplianceSummary(null);
     setRiskAnalysisPayload(null);
 
-    // If Regulatory Compliance Audit is selected, compute framework scores locally
-    if (scanType === 'regulatory' || engine === 'instant') {
-      try {
-        const localResults = scanDocument(textToAudit, selectedFrameworks);
-        setComplianceSummary(localResults);
-      } catch (err: any) {
-        console.warn('Compliance scan error:', err);
-      }
-    }
-
-    // Engine A: Instant Offline Scan
+    // RULE 1: Engine 1 (⚡ Instant Offline Scan)
     if (engine === 'instant') {
-      try {
-        const res = await fetch('/api/analyze', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: textToAudit, mode: 'instant' })
-        });
-        const data: AnalyzeResponsePayload = await res.json();
-        if (data.success) {
-          setRiskAnalysisPayload(data);
+      // Option B: Regulatory Compliance Audit
+      if (scanType === 'regulatory') {
+        try {
+          const localResults = scanDocument(textToAudit, selectedFrameworks);
+          setComplianceSummary(localResults);
+        } catch (err: any) {
+          console.warn('Regulatory compliance scan error:', err);
+          setErrorMsg('Failed to run regulatory compliance audit.');
+        } finally {
+          setIsLoading(false);
         }
-        if (scanType === 'regulatory') setViewTab('compliance');
-        else setViewTab('riskCards');
-      } catch (err: any) {
-        console.warn('Instant risk analysis error:', err);
-      } finally {
-        setIsLoading(false);
+      } 
+      // Option A: General Terms Scan
+      else {
+        try {
+          const res = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: textToAudit, mode: 'instant' })
+          });
+          const data: AnalyzeResponsePayload = await res.json();
+          if (data.success) {
+            setRiskAnalysisPayload(data);
+          } else {
+            throw new Error(data.error || 'Failed to complete instant terms scan.');
+          }
+        } catch (err: any) {
+          console.warn('Instant risk analysis error:', err);
+          setErrorMsg(err.message || 'Instant terms scan encountered an error.');
+        } finally {
+          setIsLoading(false);
+        }
       }
-    }
-    // Engine B: Deep AI Scan (Gemini)
+    } 
+    // RULE 2: Engine 2 (🧠 Deep AI Scan - Gemini)
+    // Compliance scan and framework chips are STRICTLY DISABLED/HIDDEN.
     else {
       try {
         const res = await fetch('/api/analyze', {
@@ -130,8 +136,6 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
           throw new Error(data.error || 'Failed to complete Deep AI Gemini Audit.');
         }
         setRiskAnalysisPayload(data);
-        if (scanType === 'regulatory') setViewTab('compliance');
-        else setViewTab('riskCards');
       } catch (aiErr: any) {
         console.error('Deep AI scan error:', aiErr);
         setErrorMsg(aiErr.message || 'Gemini AI scan encountered an error.');
@@ -155,20 +159,20 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'url', content: url.trim(), mode: engine })
+        body: JSON.stringify({ type: 'url', content: url.trim(), mode: engine === 'ai' ? 'ai' : 'instant' })
       });
       const data: AnalyzeResponsePayload = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Failed to extract text from specified URL.');
       }
-      setRiskAnalysisPayload(data);
 
-      const extractedText = data.findings.map(f => f.quote).join(' ') || url;
-      const localResults = scanDocument(extractedText, selectedFrameworks);
-      setComplianceSummary(localResults);
-
-      if (scanType === 'regulatory') setViewTab('compliance');
-      else setViewTab('riskCards');
+      if (engine === 'ai' || scanType === 'general') {
+        setRiskAnalysisPayload(data);
+      } else {
+        const extractedText = data.findings.map(f => f.quote).join(' ') || url;
+        const localResults = scanDocument(extractedText, selectedFrameworks);
+        setComplianceSummary(localResults);
+      }
     } catch (err: any) {
       setErrorMsg(err.message || 'URL scraping failed. Please paste text directly.');
     } finally {
@@ -254,51 +258,53 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
             </div>
           </div>
 
-          {/* LEVEL 2: Scan Type (Second Choice) */}
-          <div className="p-3.5 bg-slate-100/70 border-b border-slate-200 flex flex-col items-center justify-center space-y-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Step 2: Select Scan Objective
-            </span>
-            <div className="p-1 bg-white border border-slate-200/90 rounded-2xl inline-flex space-x-1 shadow-sm w-full sm:w-auto justify-center">
-              
-              {/* Option A: General Terms Scan */}
-              <button
-                type="button"
-                onClick={() => setScanType('general')}
-                className={`flex items-center justify-center space-x-2 py-2 px-4 rounded-xl text-xs font-extrabold transition-all ${
-                  scanType === 'general'
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>📋 General Terms Scan</span>
-              </button>
+          {/* LEVEL 2: Scan Type (Second Choice - ONLY SHOWN IF engine === 'instant') */}
+          {engine === 'instant' && (
+            <div className="p-3.5 bg-slate-100/70 border-b border-slate-200 flex flex-col items-center justify-center space-y-2 animate-fadeIn">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                Step 2: Select Scan Objective
+              </span>
+              <div className="p-1 bg-white border border-slate-200/90 rounded-2xl inline-flex space-x-1 shadow-sm w-full sm:w-auto justify-center">
+                
+                {/* Option A: General Terms Scan */}
+                <button
+                  type="button"
+                  onClick={() => setScanType('general')}
+                  className={`flex items-center justify-center space-x-2 py-2 px-4 rounded-xl text-xs font-extrabold transition-all ${
+                    scanType === 'general'
+                      ? 'bg-slate-900 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>📋 General Terms Scan</span>
+                </button>
 
-              {/* Option B: Regulatory Compliance Audit */}
-              <button
-                type="button"
-                onClick={() => setScanType('regulatory')}
-                className={`flex items-center justify-center space-x-2 py-2 px-4 rounded-xl text-xs font-extrabold transition-all ${
-                  scanType === 'regulatory'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>⚖️ Regulatory Compliance Audit</span>
-              </button>
+                {/* Option B: Regulatory Compliance Audit */}
+                <button
+                  type="button"
+                  onClick={() => setScanType('regulatory')}
+                  className={`flex items-center justify-center space-x-2 py-2 px-4 rounded-xl text-xs font-extrabold transition-all ${
+                    scanType === 'regulatory'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>⚖️ Regulatory Compliance Audit</span>
+                </button>
 
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* LEVEL 3: Conditional Compliance Framework Chips (Appears ONLY when scanType === 'regulatory') */}
-          {scanType === 'regulatory' && (
+          {/* LEVEL 3: Conditional Compliance Framework Chips (ONLY SHOWN IF engine === 'instant' AND scanType === 'regulatory') */}
+          {engine === 'instant' && scanType === 'regulatory' && (
             <div className="p-4 bg-emerald-50/60 border-b border-emerald-100 animate-fadeIn">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 flex items-center space-x-1.5">
                   <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Select Active Frameworks:</span>
+                  <span>Select Active Compliance Frameworks:</span>
                 </span>
                 <span className="text-[11px] font-bold text-emerald-700">
                   {selectedFrameworks.includes('All') ? 'All Frameworks Active' : `${selectedFrameworks.length} Selected`}
@@ -511,8 +517,8 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
       {(complianceSummary || riskAnalysisPayload) && !isLoading && (
         <div className="space-y-6">
           
-          {/* Top Navigation & View Switcher */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          {/* Top Navigation Back Button */}
+          <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={handleReset}
@@ -520,36 +526,14 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
             >
               <span>← Back to Scanner</span>
             </button>
-
-            {/* View Tab Switcher */}
-            <div className="p-1 bg-white border border-slate-200 rounded-xl flex space-x-1 shadow-sm">
-              {complianceSummary && (
-                <button
-                  type="button"
-                  onClick={() => setViewTab('compliance')}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
-                    viewTab === 'compliance' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Regulatory Compliance Grid
-                </button>
-              )}
-              {riskAnalysisPayload && (
-                <button
-                  type="button"
-                  onClick={() => setViewTab('riskCards')}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
-                    viewTab === 'riskCards' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Clause Risk Audit ({riskAnalysisPayload.findings.length})
-                </button>
-              )}
+            
+            <div className="px-3.5 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs font-mono font-bold text-slate-700 shadow-sm">
+              {engine === 'instant' ? '⚡ Instant Offline Engine' : '🧠 Gemini 2.5 AI Engine'}
             </div>
           </div>
 
-          {/* View Tab 1: Regulatory Compliance Grid */}
-          {viewTab === 'compliance' && complianceSummary && (
+          {/* Result View 1: Regulatory Compliance Grid (For Offline + Regulatory Audit) */}
+          {complianceSummary && engine === 'instant' && scanType === 'regulatory' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {complianceSummary.frameworkResults.map((result: FrameworkResult) => {
                 const score = result.score;
@@ -631,8 +615,8 @@ export const UniversalScanner: React.FC<UniversalScannerProps> = ({
             </div>
           )}
 
-          {/* View Tab 2: Detailed Clause Risk Audit Dashboard */}
-          {viewTab === 'riskCards' && riskAnalysisPayload && (
+          {/* Result View 2: Risk Dashboard (For General Scan or AI Scan) */}
+          {riskAnalysisPayload && (engine === 'ai' || (engine === 'instant' && scanType === 'general')) && (
             <RiskDashboard data={riskAnalysisPayload} onReset={handleReset} />
           )}
 
