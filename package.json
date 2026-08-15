@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "pages:build": "next build",
-    "deploy": "wrangler pages deploy .next --project-name=terms-scanner",
-    "pages:deploy": "wrangler pages deploy .next --project-name=terms-scanner"
+    "deploy:pages": "wrangler pages deploy .next --project-name=terms-scanner"
   },
   "dependencies": {
     "next": "16.3.0",
