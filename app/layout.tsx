@@ -55,6 +55,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  other: {
+    "google-adsense-account": "ca-pub-5058901049330069"
+  }
 };
 
 export const viewport: Viewport = {
@@ -70,10 +73,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} dark antialiased`}>
       <head>
+        {/* Google AdSense Meta Verification */}
+        <meta name="google-adsense-account" content="ca-pub-5058901049330069" />
+
         {/* Google AdSense Standard Script */}
         <script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5058901049330069"
           crossOrigin="anonymous"
         />
       </head>
