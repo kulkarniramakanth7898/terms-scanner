@@ -15,40 +15,34 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://termsscanner.in"),
-  title: {
-    default: "TermsScanner: Legal & Privacy Auditor | AI Contract & Policy Scanner",
-    template: "%s | TermsScanner",
-  },
-  description: "Instantly detect hidden risks in contracts, NDAs, and privacy policies using AI. 100% Client-Side GDPR, HIPAA, CCPA, SOC 2 & PCI-DSS compliance auditor.",
+  title: "Terms Scanner – Free AI & Offline Terms of Service Analyzer",
+  description: "Analyze Terms of Service, Privacy Policies, and user agreements instantly using AI and fast offline keyword scanning. Spot sneaky clauses, auto-renewals, and privacy risks.",
   keywords: [
-    "TermsScanner",
-    "privacy auditor",
-    "legal AI",
-    "contract risk detector",
-    "NDA scanner",
-    "terms of service auditor",
-    "PDF legal scanner",
-    "privacy policy risk",
-    "GDPR compliance checker",
-    "HIPAA compliance audit",
-    "CCPA compliance check",
-    "SOC 2 evaluator",
-    "PCI-DSS security audit",
-    "DPDP Act India auditor"
+    "terms scanner", 
+    "offline terms scanner", 
+    "free TOS analyzer", 
+    "privacy policy scanner", 
+    "keyword red flag detector", 
+    "client-side contract analyzer", 
+    "AI terms of service summarizer", 
+    "scan terms and conditions online"
   ],
-  authors: [{ name: "TermsScanner AI" }],
+  alternates: {
+    canonical: "https://termsscanner.in",
+  },
+  authors: [{ name: "Terms Scanner AI" }],
   openGraph: {
-    type: "website",
-    locale: "en_US",
+    title: "Terms Scanner – Free AI & Offline Terms of Service Analyzer",
+    description: "Fast, private TOS and privacy policy analyzer using AI and offline keyword detection.",
     url: "https://termsscanner.in",
-    siteName: "TermsScanner",
-    title: "TermsScanner: Legal & Privacy Auditor | AI Contract & Policy Scanner",
-    description: "Instantly detect hidden risks in contracts, NDAs, and privacy policies using AI. 100% Client-Side compliance auditing.",
+    siteName: "Terms Scanner",
+    locale: "en_US",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TermsScanner: Legal & Privacy Auditor | AI Contract & Policy Scanner",
-    description: "Instantly detect hidden risks in contracts, NDAs, and privacy policies using AI.",
+    title: "Terms Scanner – Free AI & Offline Terms of Service Analyzer",
+    description: "Analyze Terms of Service and Privacy Policies using AI and offline keyword detection.",
   },
   robots: {
     index: true,
@@ -75,6 +69,69 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// JSON-LD Structured Data for SoftwareApplication & FAQPage
+const softwareJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Terms Scanner",
+  "operatingSystem": "Any (Web Browser)",
+  "applicationCategory": "BusinessApplication",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "description": "Analyze Terms of Service, Privacy Policies, and user agreements instantly using AI and fast offline keyword scanning. Spot sneaky clauses, auto-renewals, and privacy risks.",
+  "featureList": "AI Deep Analysis, Instant Offline Regex/Keyword Detection, Zero-Data Retention Privacy Mode"
+};
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How does the offline keyword scanner work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The offline keyword scanner uses 100% client-side JavaScript regular expressions (regex) directly in your browser. No text is transmitted to any external server, guaranteeing 100% data privacy and zero latency."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I use AI analysis vs. offline keyword search?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use the Instant Offline Keyword Scanner for instant, confidential checks of regulatory compliance or common predatory patterns. Use the Deep AI Scan when you want context-aware explanations, counter-proposals, and nuanced legal summarization."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Terms Scanner free to use?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, Terms Scanner is 100% free for individual users, legal researchers, and privacy-conscious consumers."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is any of my pasted text stored or shared?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. When using the Instant Offline Scan, your text never leaves your device memory. When using Deep AI Scan, text is processed ephemerally in memory solely to compute your audit and is never sold or retained."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can Terms Scanner replace formal legal counsel?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Terms Scanner provides automated risk identification and educational analysis. It is not formal legal advice. For binding contracts or litigation, always consult a licensed attorney."
+      }
+    }
+  ]
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -94,6 +151,16 @@ export default function RootLayout({
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5058901049330069"
           crossOrigin="anonymous"
+        />
+
+        {/* JSON-LD Schema Markup */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between">
@@ -147,11 +214,11 @@ export default function RootLayout({
             {/* Prominent Mandatory Legal Disclaimer */}
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl max-w-4xl mx-auto text-left text-[11px] text-slate-600 leading-relaxed space-y-1">
               <p className="font-semibold text-slate-700">
-                Disclaimer: TermsScanner provides automated heuristic and rule-based compliance analysis for informational purposes only. It does not constitute formal legal advice, auditing certification, or an attorney-client relationship. We accept no liability for regulatory penalties or omissions. Consult a qualified attorney for legal compliance.
+                Disclaimer: Terms Scanner provides automated heuristic and rule-based compliance analysis for informational purposes only. It does not constitute formal legal advice, auditing certification, or an attorney-client relationship. We accept no liability for regulatory penalties or omissions. Consult a qualified attorney for legal compliance.
               </p>
             </div>
 
-            <p>© {new Date().getFullYear()} TermsScanner. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Terms Scanner. All rights reserved.</p>
 
           </div>
         </footer>

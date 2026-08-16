@@ -15,14 +15,14 @@ export const Hero: React.FC = () => {
         <span>Instant Legal & Regulatory Compliance Auditor</span>
       </div>
 
-      {/* Hero Headline */}
+      {/* Hero Main H1 Headline */}
       <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-tight">
-        Terms<span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600">Scanner</span>
+        Free AI & Instant Offline <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600">Terms of Service Scanner</span>
       </h1>
 
       {/* Subheadline */}
       <p className="mt-4 text-base sm:text-xl text-slate-600 max-w-3xl mx-auto font-normal leading-relaxed">
-        Instantly detect hidden risks, regulatory non-compliance, and predatory clauses in contracts, NDAs, and privacy policies.
+        Analyze Terms of Service, Privacy Policies, and user agreements instantly using AI and fast offline keyword scanning. Spot sneaky clauses, auto-renewals, and privacy risks.
       </p>
 
       {/* Feature Highlights Grid */}
@@ -37,7 +37,7 @@ export const Hero: React.FC = () => {
         </div>
         <div className="flex items-center justify-center space-x-2 p-3 rounded-2xl bg-white border border-slate-200/90 shadow-sm hover:border-slate-300 transition-all">
           <Search className="w-4 h-4 text-blue-600 shrink-0" />
-          <span>Offline Client PDF</span>
+          <span>100% Offline Parsing</span>
         </div>
         <div className="flex items-center justify-center space-x-2 p-3 rounded-2xl bg-white border border-slate-200/90 shadow-sm hover:border-slate-300 transition-all">
           <History className="w-4 h-4 text-purple-600 shrink-0" />
