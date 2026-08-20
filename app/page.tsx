@@ -5,20 +5,21 @@ import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { UniversalScanner } from '@/components/UniversalScanner';
+import { POPULAR_SERVICES } from '@/lib/services';
 import { 
   ShieldCheck, 
   Zap, 
   Brain, 
   ArrowRight, 
   Lock, 
-  AlertTriangle, 
   CreditCard, 
   Database, 
   Gavel, 
   Sparkles,
   ChevronDown,
   ChevronUp,
-  FileText
+  FileText,
+  Globe
 } from 'lucide-react';
 
 export default function Home() {
@@ -219,7 +220,62 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECTION 3: Specialized Compliance Auditor Cards */}
+        {/* SECTION 3: Popular App Privacy Audits (Programmatic SEO Pages) */}
+        <section className="max-w-5xl mx-auto px-4 my-16 space-y-6">
+          <div className="text-center space-y-2">
+            <span className="inline-flex items-center space-x-1.5 px-3.5 py-1 bg-indigo-50 border border-indigo-200/80 rounded-full text-xs font-bold text-indigo-800 shadow-sm">
+              <Globe className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Programmatic Platform Risk Audits</span>
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Popular Web Service & App Privacy Audits
+            </h2>
+            <p className="text-xs text-slate-600 max-w-xl mx-auto">
+              Explore in-depth privacy policies, hidden clause breakdowns, and risk scores for top digital platforms.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {POPULAR_SERVICES.map((service) => {
+              const isHigh = service.riskScore >= 7.5;
+              const badgeClass = isHigh
+                ? 'bg-rose-50 text-rose-700 border-rose-200'
+                : 'bg-amber-50 text-amber-700 border-amber-200';
+
+              return (
+                <Link
+                  key={service.slug}
+                  href={`/privacy/${service.slug}`}
+                  className="p-5 bg-white border border-slate-200 hover:border-blue-500 rounded-2xl transition-all shadow-sm hover:shadow-md group flex flex-col justify-between space-y-3"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-slate-500">
+                        {service.category}
+                      </span>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black border ${badgeClass}`}>
+                        {service.riskScore} / 10 Risk
+                      </span>
+                    </div>
+                    <h3 className="text-base font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors">
+                      {service.name} Privacy Audit
+                    </h3>
+                    <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                      {service.summary}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-blue-600 group-hover:translate-x-0.5 transition-all">
+                    <span>View Full Breakdown</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* SECTION 4: Specialized Compliance Auditor Cards */}
         <section className="max-w-5xl mx-auto px-4 my-16 space-y-6">
           <div className="text-center space-y-2">
             <span className="inline-flex items-center space-x-1.5 px-3.5 py-1 bg-blue-50 border border-blue-200/80 rounded-full text-xs font-bold text-blue-800 shadow-sm">
@@ -335,7 +391,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECTION 4: Accordion FAQ Section */}
+        {/* SECTION 5: Accordion FAQ Section */}
         <section className="max-w-4xl mx-auto px-4 my-16 space-y-6">
           <div className="text-center space-y-2">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">

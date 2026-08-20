@@ -1,10 +1,11 @@
 import { MetadataRoute } from 'next';
+import { POPULAR_SERVICES } from '@/lib/services';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://termsscanner.in';
   const currentDate = new Date();
 
-  return [
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: currentDate,
@@ -60,4 +61,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
   ];
+
+  const programmaticServiceRoutes: MetadataRoute.Sitemap = POPULAR_SERVICES.map(service => ({
+    url: `${baseUrl}/privacy/${service.slug}`,
+    lastModified: currentDate,
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...programmaticServiceRoutes];
 }
