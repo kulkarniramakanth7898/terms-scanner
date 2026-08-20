@@ -172,6 +172,34 @@ export default function RootLayout({
         <footer className="border-t border-slate-200 bg-white py-10 text-center text-xs text-slate-500 mt-12 shadow-inner">
           <div className="max-w-5xl mx-auto px-4 space-y-6">
             
+            {/* Popular Platform Analyses Links */}
+            <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-slate-600 pb-3 border-b border-slate-100">
+              <span className="text-slate-400 uppercase tracking-wider text-[10px] block w-full sm:w-auto">Popular Analyses:</span>
+              <Link href="/privacy/tiktok" className="hover:text-blue-600 transition-colors">
+                TikTok
+              </Link>
+              <span>•</span>
+              <Link href="/privacy/openai-chatgpt" className="hover:text-blue-600 transition-colors">
+                ChatGPT
+              </Link>
+              <span>•</span>
+              <Link href="/privacy/instagram" className="hover:text-blue-600 transition-colors">
+                Instagram
+              </Link>
+              <span>•</span>
+              <Link href="/privacy/zoom" className="hover:text-blue-600 transition-colors">
+                Zoom
+              </Link>
+              <span>•</span>
+              <Link href="/privacy/discord" className="hover:text-blue-600 transition-colors">
+                Discord
+              </Link>
+              <span>•</span>
+              <Link href="/privacy/whatsapp" className="hover:text-blue-600 transition-colors">
+                WhatsApp
+              </Link>
+            </div>
+
             {/* Specialized Auditor Links */}
             <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-slate-600 pb-3 border-b border-slate-100">
               <span className="text-slate-400 uppercase tracking-wider text-[10px] block w-full sm:w-auto">Compliance Auditors:</span>
