@@ -17,6 +17,9 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
+export const dynamic = 'force-static';
+export const dynamicParams = true;
+
 interface PageProps {
   params: Promise<{
     slug: string;
@@ -116,7 +119,7 @@ export default async function ServicePrivacyPage({ params }: PageProps) {
           <div className="flex items-center space-x-1 text-[11px] font-medium">
             <Link href="/" className="hover:underline">Home</Link>
             <span>/</span>
-            <span className="text-slate-400">Privacy Audits</span>
+            <Link href="/privacy" className="hover:underline">Privacy Audits</Link>
             <span>/</span>
             <span className="font-bold text-slate-700">{service.name}</span>
           </div>
